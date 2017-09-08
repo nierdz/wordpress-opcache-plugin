@@ -1,12 +1,12 @@
 <?php
 /*
-Plugin Name: Flush OPcache
+Plugin Name: WP OPcache
 Plugin URI: http://wordpress.org/plugins/flush-opcache/
 Description: This plugin allows to manage Zend OPcache inside your WordPress admin dashboard.
 Author: Infogérance Linux
-Version: 2.0.1
+Version: 2.1
 Text Domain: flush-opcache
-Domain Path: /lang
+Domain Path: /languages
 Author URI: https://mnt-tech.fr/
 License: GPL2
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -67,7 +67,7 @@ function flush_opcache() {
 
 	// OPcache reset
 	if ( $action == 'flushopcacheall' ) {
-		opcache_reset();
+		wp_opcache_reset();
 	}
 
 	 wp_redirect( esc_url_raw( add_query_arg( array( 'flush_opcache_action' => 'done' ) ) ) );
@@ -80,13 +80,14 @@ function show_opcache_notice() {
 // Add submenu page and register settings
 add_action( 'admin_menu', 'flush_opcache_menu' );
 function flush_opcache_menu() {
-	add_options_page( __( 'Flush OPcache Options', 'flush-opcache' ), 'Flush OPcache', 'manage_options', 'flush-opcache', 'flush_opcache_options' );
+	add_options_page( __( 'WP OPcache Options', 'flush-opcache' ), 'WP OPcache', 'manage_options', 'flush-opcache', 'flush_opcache_options' );
 	add_action( 'admin_init', 'register_flush_opache_settings' );
 }
 
 // Register settings
 function register_flush_opache_settings() {
 	register_setting( 'flush-opcache-settings-group', 'flush-opcache-upgrade' );
+	register_setting( 'flush-opcache-settings-group', 'flush-opcache-preload' );
 	register_setting( 'flush-opcache-settings-group', 'flush-opcache-help' );
 }
 
@@ -95,12 +96,16 @@ function flush_opcache_options() {
 	if ( !current_user_can( 'activate_plugins' ) )
 		wp_die( __( 'Sorry, you are not allowed to access this page.', 'flush-opcache' ) );
 
-	if (!extension_loaded('Zend OPcache')) {
+	if ( !extension_loaded( 'Zend OPcache' ) ) {
 		echo '<div class="notice notice-error"><p>' . __( 'You do not have the Zend OPcache extension loaded, you need to install it to use this plugin.', 'flush-opcache' ) . '</p></div>';
 	}
 
+	if ( ! opcache_get_status() ) {
+		echo '<div class="notice notice-error"><p>' . __( 'Zend OPcache is loaded but not activated. You need to set opcache.enable=1 in your php.ini', 'flush-opcache' ) . '</p></div>';
+	}
+
 	echo '<div class="wrap">';
-	$tab = isset($_GET['tab']) ? $_GET['tab'] : 'general';
+	$tab = isset($_GET['tab']) ? sanitize_key( $_GET['tab'] ) : 'general';
 	if ($tab == 'general') {
 		manage_tabs();
 		?>
@@ -117,6 +122,12 @@ function flush_opcache_options() {
 							<td>
 								<input type="checkbox" name="flush-opcache-upgrade" value="1" <?php checked( 1, get_option( 'flush-opcache-upgrade' ), true ); ?> /> 
 								<label for="flush-opcache-upgrade"><?php _e( 'Automatically flush OPcache after an upgrade', 'flush-opcache' ); ?></label>
+							</td>
+						</tr>
+						<tr valign="top">
+							<td>
+								<input type="checkbox" name="flush-opcache-preload" value="1" <?php checked( 1, get_option( 'flush-opcache-preload' ), true ); ?> /> 
+								<label for="flush-opcache-help"><?php _e( 'Precompile php files each time opcache is flushed aka "OPcache Prewarm"', 'flush-opcache' ); ?></label>
 							</td>
 						</tr>
 						<tr valign="top">
@@ -146,7 +157,7 @@ function manage_tabs() {
 	$settings_tabs['general'] = __( 'General Settings', 'flush-opcache' );
 	$settings_tabs['statistics'] = __( 'Statistics', 'flush-opcache' );
 
-	$current_tab = isset( $_GET['tab'] ) ? $_GET['tab'] : 'general_settings';
+	$current_tab = isset( $_GET['tab'] ) ? sanitize_key( $_GET['tab'] ) : 'general_settings';
 	echo '<h2 class="nav-tab-wrapper">';
 	foreach ( $settings_tabs as $tab_key => $tab_caption ) {
 		$active = ( $current_tab == $tab_key ) ? ' nav-tab-active' : '';
@@ -167,7 +178,27 @@ function add_link_footer() {
 add_action( 'upgrader_process_complete', 'after_wp_update' );
 function after_wp_update() { 
 	if ( get_option( 'flush-opcache-upgrade' ) ) {
-		opcache_reset();
+		wp_opcache_reset();
 	}
 }
-?>
+
+// Where OPcache is actually flushed
+function wp_opcache_reset() {
+	opcache_reset();
+	if ( get_option( 'flush-opcache-upgrade' ) ) {
+		wp_opcache_preload();
+	}
+}
+
+// Where we preload all php file
+function wp_opcache_preload() {
+	$di = new RecursiveDirectoryIterator( ABSPATH, RecursiveDirectoryIterator::SKIP_DOTS );
+	$it = new RecursiveIteratorIterator( $di );
+
+	foreach( $it as $file ) {
+		if (pathinfo($file, PATHINFO_EXTENSION) == "php") {
+			opcache_compile_file( $file ); 
+		}
+	}
+}
+

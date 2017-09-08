@@ -1,9 +1,9 @@
-=== Flush OPcache ===
+=== WP OPcache ===
 Contributors: mnttech
 Tags: opcache, cache, flush, php
 Requires at least: 4.3
-Tested up to: 4.8
-Stable tag: 2.0.1
+Tested up to: 4.8.1
+Stable tag: 2.1
 License: GPLv2
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -39,6 +39,11 @@ Nothing related to this plugin, it's just the way Zend OPcache works... This plu
 
 == Changelog ==
 
+= 2.1 =
+* Change plugin name
+* Warning when opcache is loaded but no active
+* Add an option to prewarm OPcache
+
 = 2.0.1 =
 * Minor fix to make translation works on wordpress.org
 
@@ -57,5 +62,3 @@ Nothing related to this plugin, it's just the way Zend OPcache works... This plu
 * First version
 
 == Upgrade Notice ==
-
-== Arbitrary section ==
