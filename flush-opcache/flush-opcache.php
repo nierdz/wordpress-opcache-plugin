@@ -4,7 +4,7 @@ Plugin Name: WP OPcache
 Plugin URI: http://wordpress.org/plugins/flush-opcache/
 Description: This plugin allows to manage Zend OPcache inside your WordPress admin dashboard.
 Author: Infogérance Linux
-Version: 2.1
+Version: 2.2
 Text Domain: flush-opcache
 Domain Path: /languages
 Author URI: https://mnt-tech.fr/
@@ -14,51 +14,74 @@ License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
 
 // Translation
-add_action( 'plugins_loaded', 'fo_load_textdomain' );
 function fo_load_textdomain() {
 	load_plugin_textdomain( 'flush-opcache', false, dirname( plugin_basename(__FILE__) ) . '/lang/' );
 }
 
-// Add button in admin area
+// All actions
+if ( is_multisite() && is_main_site() ) {
+	add_action( "network_admin_menu", 'flush_opcache_menu' );
+
+	// Handle options update in network mode
+	add_action( 'network_admin_edit_update',  'flush_opcache_update_network_options' );
+} else {
+	add_action( "admin_menu", 'flush_opcache_menu' );
+}
+add_action( 'admin_init', 'flush_opcache' );
+add_action( 'admin_bar_menu', 'flush_opcache_button', 100 );
+add_action( 'plugins_loaded', 'fo_load_textdomain' );
+add_action( 'admin_init', 'register_flush_opache_settings' );
+add_action( 'upgrader_process_complete', 'flush_opcache_after_wp_update' );
+
+// Add button in admin bar
 function flush_opcache_button() {
 	global $wp_admin_bar;
 
-	if ( !is_user_logged_in() || !is_admin_bar_showing() )
+	if ( ! is_user_logged_in() || ! is_admin_bar_showing() ) {
 		return false;
+	}
 
-	// User's verification
-	if ( !current_user_can( 'activate_plugins' ))
+	// User verification
+	if ( ! is_admin() ) {
 		return false;
+	}
 
 	// Button parameters
 	$flush_url = add_query_arg( array( 'flush_opcache_action' => 'flushopcacheall' ) );
 	$nonced_url = wp_nonce_url( $flush_url, 'flush_opcache_all' );
-	$wp_admin_bar->add_menu( array(
-		'parent' => '',
-		'id' => 'flush_opcache_button',
-		'title' => __( 'Flush PHP OPcache', 'flush-opcache' ),
-		'meta' => array( 'title' => __( 'Flush PHP OPcache', 'flush-opcache' ) ),
-		'href' => $nonced_url
-		)
-	);
+
+	// Admin button only on main site in MS edition or admin bar if normal edition
+	if ( ( is_multisite() && is_super_admin() && is_main_site() ) || ! is_multisite() ) {
+		$wp_admin_bar->add_menu( array(
+			'parent' => '',
+			'id' => 'flush_opcache_button',
+			'title' => __( 'Flush PHP OPcache', 'flush-opcache' ),
+			'meta' => array( 'title' => __( 'Flush PHP OPcache', 'flush-opcache' ) ),
+			'href' => $nonced_url
+			)
+		);
+	}
 }
-add_action( 'admin_bar_menu', 'flush_opcache_button', 100 );
-add_action( 'admin_init', 'flush_opcache');
 
-// Where OPcache is actually flushed
+// Where we handle OPcache flush action
 function flush_opcache() {
-
-	if ( !isset( $_REQUEST['flush_opcache_action'] ) )
+	if ( ! isset( $_REQUEST['flush_opcache_action'] ) ) {
 		return;
+	}
 
 	// User's verification
-	if ( !current_user_can( 'activate_plugins' ) )
+	if ( ! is_admin() ) {
 		wp_die( __( 'Sorry, you can\'t flush OPcache.', 'flush-opcache' ) );
+	}
 
 	// Show notice when flush is done  
-	$action = $_REQUEST['flush_opcache_action'];
+	$action = sanitize_key( $_REQUEST['flush_opcache_action'] );
 	if ( $action == 'done' ) {
-		add_action( 'admin_notices', 'show_opcache_notice' );
+		if ( is_multisite() ) {
+			add_action( 'network_admin_notices', 'show_opcache_notice' );
+		} else {
+			add_action( 'admin_notices', 'show_opcache_notice' );
+		}
 		return;
 	}
 
@@ -78,25 +101,31 @@ function show_opcache_notice() {
 }
 
 // Add submenu page and register settings
-add_action( 'admin_menu', 'flush_opcache_menu' );
 function flush_opcache_menu() {
-	add_options_page( __( 'WP OPcache Options', 'flush-opcache' ), 'WP OPcache', 'manage_options', 'flush-opcache', 'flush_opcache_options' );
-	add_action( 'admin_init', 'register_flush_opache_settings' );
+	if ( is_multisite() && is_super_admin() && is_main_site() ) {
+		add_submenu_page( 'settings.php', __( 'WP OPcache Options', 'flush-opcache' ), 'WP OPcache', 'manage_network_options', 'flush-opcache', 'flush_opcache_options' );
+	} elseif ( ! is_multisite() ) {
+		add_options_page( __( 'WP OPcache Options', 'flush-opcache' ), 'WP OPcache', 'manage_options', 'flush-opcache', 'flush_opcache_options' );
+	}
 }
 
 // Register settings
 function register_flush_opache_settings() {
 	register_setting( 'flush-opcache-settings-group', 'flush-opcache-upgrade' );
 	register_setting( 'flush-opcache-settings-group', 'flush-opcache-preload' );
-	register_setting( 'flush-opcache-settings-group', 'flush-opcache-help' );
+}
+
+function dummy_sanitize( $options ) {
+	return $options;
 }
 
 // Manage submenu page
 function flush_opcache_options() {
-	if ( !current_user_can( 'activate_plugins' ) )
+	if ( ! is_admin() ) {
 		wp_die( __( 'Sorry, you are not allowed to access this page.', 'flush-opcache' ) );
+	}
 
-	if ( !extension_loaded( 'Zend OPcache' ) ) {
+	if ( ! extension_loaded( 'Zend OPcache' ) ) {
 		echo '<div class="notice notice-error"><p>' . __( 'You do not have the Zend OPcache extension loaded, you need to install it to use this plugin.', 'flush-opcache' ) . '</p></div>';
 	}
 
@@ -109,7 +138,12 @@ function flush_opcache_options() {
 	if ($tab == 'general') {
 		manage_tabs();
 		?>
+		<?php if ( is_multisite() ) { ?>
+		<form method="post" action="edit.php?action=update">
+		<?php wp_nonce_field( 'update_flush_opcache_options', 'update_flush_opcache_options' ); ?>
+		<?php } else { ?>
 		<form method="post" action="options.php">
+		<?php } ?>
 		<?php settings_fields( 'flush-opcache-settings-group' ); ?>
 		<?php do_settings_sections( 'flush-opcache-settings-group' ); ?>
 			<div class="postbox">
@@ -127,13 +161,7 @@ function flush_opcache_options() {
 						<tr valign="top">
 							<td>
 								<input type="checkbox" name="flush-opcache-preload" value="1" <?php checked( 1, get_option( 'flush-opcache-preload' ), true ); ?> /> 
-								<label for="flush-opcache-help"><?php _e( 'Precompile php files each time opcache is flushed aka "OPcache Prewarm"', 'flush-opcache' ); ?></label>
-							</td>
-						</tr>
-						<tr valign="top">
-							<td>
-								<input type="checkbox" name="flush-opcache-help" value="1" <?php checked( 1, get_option( 'flush-opcache-help' ), true ); ?> /> 
-								<label for="flush-opcache-help"><?php _e( 'Help us to be more famous, it\'ll add a link to this plugin in your footer', 'flush-opcache' ); ?></label>
+								<label for="flush-opcache-preload"><?php _e( 'Precompile php files each time opcache is flushed aka "OPcache Prewarm"', 'flush-opcache' ); ?></label>
 							</td>
 						</tr>
 					</table>
@@ -166,18 +194,38 @@ function manage_tabs() {
 	echo '</h2>';
 }
 
-// Add link in footer if enable
-add_action( 'wp_footer', 'add_link_footer' ); 
-function add_link_footer() { 
-	if ( get_option( 'flush-opcache-help' ) ) {
-		echo '<a href="https://wordpress.org/plugins/flush-opcache/">' . __( 'Powered by Flush OPcache', 'flush-opcache' ) . '</a>';
+// Handle options update in network mode only
+function flush_opcache_update_network_options() {
+	// Avoid CSRF, nonce is included in form with wp_nonce_field function
+	check_admin_referer( 'update_flush_opcache_options', 'update_flush_opcache_options' );
+
+	// TODO improve this shitty thing or wait until one day network options is properly handled by settings API...
+	if ( isset( $_REQUEST['flush-opcache-upgrade'] ) &&  $_REQUEST['flush-opcache-upgrade'] == 1 ) {
+		update_option( 'flush-opcache-upgrade', 1 );
+	} else {
+		update_option( 'flush-opcache-upgrade', 0 );
 	}
+	if ( isset( $_REQUEST['flush-opcache-preload'] ) && $_REQUEST['flush-opcache-preload'] == 1 ) {
+		update_option( 'flush-opcache-preload', 1 );
+	} else {
+		update_option( 'flush-opcache-preload', 0 );
+	}
+
+  // At last we redirect back to our options page.
+	wp_redirect( add_query_arg(
+		array(
+			'page'    => 'flush-opcache',
+			'updated' => 'true'
+		),
+		network_admin_url( 'settings.php' )
+		)
+	);
+	exit;
 }
 
 // Flush OPcache after upgrade if enable
-add_action( 'upgrader_process_complete', 'after_wp_update' );
-function after_wp_update() { 
-	if ( get_option( 'flush-opcache-upgrade' ) ) {
+function flush_opcache_after_wp_update() { 
+	if ( get_option( 'flush-opcache-upgrade' ) === 1 ) {
 		wp_opcache_reset();
 	}
 }
@@ -185,7 +233,7 @@ function after_wp_update() {
 // Where OPcache is actually flushed
 function wp_opcache_reset() {
 	opcache_reset();
-	if ( get_option( 'flush-opcache-upgrade' ) ) {
+	if ( get_option( 'flush-opcache-preload' ) === 1 ) {
 		wp_opcache_preload();
 	}
 }
@@ -201,4 +249,3 @@ function wp_opcache_preload() {
 		}
 	}
 }
-
