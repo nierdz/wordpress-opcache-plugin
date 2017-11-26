@@ -4,7 +4,7 @@ Plugin Name: WP OPcache
 Plugin URI: http://wordpress.org/plugins/flush-opcache/
 Description: This plugin allows to manage Zend OPcache inside your WordPress admin dashboard.
 Author: Infogérance Linux
-Version: 2.2
+Version: 2.3
 Text Domain: flush-opcache
 Domain Path: /languages
 Author URI: https://mnt-tech.fr/
@@ -15,7 +15,7 @@ License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
 // Translation
 function fo_load_textdomain() {
-	load_plugin_textdomain( 'flush-opcache', false, dirname( plugin_basename(__FILE__) ) . '/lang/' );
+	load_plugin_textdomain( 'flush-opcache', false, dirname( plugin_basename(__FILE__) ) . '/languages/' );
 }
 
 // All actions
@@ -31,7 +31,20 @@ add_action( 'admin_init', 'flush_opcache' );
 add_action( 'admin_bar_menu', 'flush_opcache_button', 100 );
 add_action( 'plugins_loaded', 'fo_load_textdomain' );
 add_action( 'admin_init', 'register_flush_opache_settings' );
-add_action( 'upgrader_process_complete', 'flush_opcache_after_wp_update' );
+add_action( 'upgrader_process_complete', 'flush_opcache_after_wp_update' ); 
+add_action( 'admin_enqueue_scripts', 'flush_opcache_enqueue_scripts_styles' );
+
+function flush_opcache_enqueue_scripts_styles() {
+	# Load d3 only on statistics page
+	if ( isset( $_GET['page'] ) && isset( $_GET['tab'] ) && ( $_GET['page'] == 'flush-opcache' ) && ( $_GET['tab'] == 'statistics' ) ) {
+		wp_enqueue_script( 'd3-opcache', plugin_dir_url( __FILE__ ) . 'd3-3.0.1.min.js', array(), null, false );
+	}
+	# Load css only on admin plugin pages
+	if ( isset( $_GET['page'] ) && ( $_GET['page'] == 'flush-opcache' ) ) {
+		wp_enqueue_style( 'flush-opcache-style', plugin_dir_url( __FILE__ ) . 'style.css', array(), null, 'all' );
+	}
+}
+
 
 // Add button in admin bar
 function flush_opcache_button() {
@@ -43,6 +56,11 @@ function flush_opcache_button() {
 
 	// User verification
 	if ( ! is_admin() ) {
+		return false;
+	}
+
+	// Check if user wants button in admin bar or not
+	if ( get_option( 'flush-opcache-hide-button' ) == 1 ) {
 		return false;
 	}
 
@@ -90,7 +108,7 @@ function flush_opcache() {
 
 	// OPcache reset
 	if ( $action == 'flushopcacheall' ) {
-		wp_opcache_reset();
+		flush_opcache_reset();
 	}
 
 	 wp_redirect( esc_url_raw( add_query_arg( array( 'flush_opcache_action' => 'done' ) ) ) );
@@ -113,6 +131,7 @@ function flush_opcache_menu() {
 function register_flush_opache_settings() {
 	register_setting( 'flush-opcache-settings-group', 'flush-opcache-upgrade' );
 	register_setting( 'flush-opcache-settings-group', 'flush-opcache-preload' );
+	register_setting( 'flush-opcache-settings-group', 'flush-opcache-hide-button' );
 }
 
 function dummy_sanitize( $options ) {
@@ -164,11 +183,34 @@ function flush_opcache_options() {
 								<label for="flush-opcache-preload"><?php _e( 'Precompile php files each time opcache is flushed aka "OPcache Prewarm"', 'flush-opcache' ); ?></label>
 							</td>
 						</tr>
+						<tr valign="top">
+							<td>
+								<input type="checkbox" name="flush-opcache-hide-button" value="1" <?php checked( 1, get_option( 'flush-opcache-hide-button' ), true ); ?> /> 
+								<label for="flush-opcache-hide-button"><?php _e( 'Hide Flush PHP Opcache button in admin bar', 'flush-opcache' ); ?></label>
+							</td>
+						</tr>
 					</table>
 				</div>
 			</div>
 		<?php
 		submit_button();
+		?>
+		</form>
+
+		<?php
+		// Big red Button ton flush PHP Opcache
+		$flush_url = add_query_arg(
+		   				array( 'flush_opcache_action' => 'flushopcacheall',
+				   				'page'                => 'flush-opcache',
+								'tab'                 => 'general'
+						)
+					);
+    	$nonced_url = wp_nonce_url( $flush_url, 'flush_opcache_all' );
+		?>
+		<form id="purgeall" action="" method="post" class="clearfix">
+		<a href="<?php echo $nonced_url; ?>" class="button-primary"><?php _e( 'Flush PHP OPcache', 'flush-opcache' ); ?></a>
+		</form>
+		<?php
 	}
 	if ($tab == 'statistics') {
 		manage_tabs();
@@ -205,10 +247,17 @@ function flush_opcache_update_network_options() {
 	} else {
 		update_option( 'flush-opcache-upgrade', 0 );
 	}
+
 	if ( isset( $_REQUEST['flush-opcache-preload'] ) && $_REQUEST['flush-opcache-preload'] == 1 ) {
 		update_option( 'flush-opcache-preload', 1 );
 	} else {
 		update_option( 'flush-opcache-preload', 0 );
+	}
+
+	if ( isset( $_REQUEST['flush-opcache-hide-button'] ) && $_REQUEST['flush-opcache-hide-button'] == 1 ) {
+		update_option( 'flush-opcache-hide-button', 1 );
+	} else {
+		update_option( 'flush-opcache-hide-button', 0 );
 	}
 
   // At last we redirect back to our options page.
@@ -225,27 +274,34 @@ function flush_opcache_update_network_options() {
 
 // Flush OPcache after upgrade if enable
 function flush_opcache_after_wp_update() { 
-	if ( get_option( 'flush-opcache-upgrade' ) === 1 ) {
-		wp_opcache_reset();
+	if ( get_option( 'flush-opcache-upgrade' ) == 1 ) {
+		flush_opcache_reset();
 	}
 }
 
 // Where OPcache is actually flushed
-function wp_opcache_reset() {
-	opcache_reset();
-	if ( get_option( 'flush-opcache-preload' ) === 1 ) {
-		wp_opcache_preload();
+function flush_opcache_reset() {
+	if ( function_exists( 'opcache_reset' ) ) {
+		// Flush OPcache
+		opcache_reset();
+
+		// If prewarm option is active
+		if ( get_option( 'flush-opcache-preload' ) == 1 ) {
+			flush_opcache_preload();
+		}
 	}
 }
 
 // Where we preload all php file
-function wp_opcache_preload() {
-	$di = new RecursiveDirectoryIterator( ABSPATH, RecursiveDirectoryIterator::SKIP_DOTS );
-	$it = new RecursiveIteratorIterator( $di );
+function flush_opcache_preload() {
+	if ( function_exists( 'opcache_compile_file' ) ) {
+		$di = new RecursiveDirectoryIterator( ABSPATH, RecursiveDirectoryIterator::SKIP_DOTS );
+		$it = new RecursiveIteratorIterator( $di );
 
-	foreach( $it as $file ) {
-		if (pathinfo($file, PATHINFO_EXTENSION) == "php") {
-			opcache_compile_file( $file ); 
+		foreach( $it as $file ) {
+			if (pathinfo($file, PATHINFO_EXTENSION) == "php") {
+				@opcache_compile_file( $file );
+			}
 		}
 	}
 }

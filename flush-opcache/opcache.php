@@ -6,6 +6,20 @@ if ( strpos( $_SERVER['REQUEST_URI'], basename( __FILE__ ) ) !== false ) {
 }
 
 
+/**
+ * OPcache Status
+ * 
+ * A one-page opcache status page for the PHP 5.5 opcode cache.
+ * https://github.com/wp-cloud/opcache-status
+ *
+ * @package OpCacheStatus
+ * @version 0.1.0
+ * @author WP-Cloud <code@wp-cloud.net>
+ * @copyright Copyright (c) 2016, WP-Cloud
+ * @copyright Copyright (c) -2016, Rasmus Lerdorf
+ * @license @todo
+ */
+
 define('THOUSAND_SEPARATOR',true);
 
 if (!extension_loaded('Zend OPcache')) {
@@ -18,6 +32,8 @@ class OpCacheDataModel
     private $_configuration;
     private $_status;
     private $_d3Scripts = array();
+
+    public $version = '0.1.0';
 
     public function __construct()
     {
@@ -104,6 +120,7 @@ class OpCacheDataModel
 
     public function getScriptStatusRows()
     {
+        $dirs = array();
         foreach ($this->_status['scripts'] as $key => $data) {
             $dirs[dirname($key)][basename($key)] = $data;
             $this->_arrayPset($this->_d3Scripts, $key, array(
@@ -288,9 +305,18 @@ class OpCacheDataModel
         return $array;
     }
 
+    public function clearCache() {
+        opcache_reset();
+    }
+
 }
 
 $dataModel = new OpCacheDataModel();
+
+if (isset($_GET['clear']) && $_GET['clear'] == 1) {
+    $dataModel->clearCache();
+    header('Location: ' . $_SERVER['PHP_SELF']);
+}
 ?>
 <!DOCTYPE html>
 <meta charset="utf-8">
@@ -463,9 +489,16 @@ $dataModel = new OpCacheDataModel();
         label {
             cursor: pointer;
         }
+
+        .actions {
+            margin: 20px 0;
+            padding: 10px;
+            border: 1px solid #cacaca;
+        }
     </style>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/d3/3.0.1/d3.v3.min.js"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+	<script>
+		var $ = jQuery.noConflict();
+	</script>
     <script>
         var hidden = {};
         function toggleVisible(head, row) {
@@ -485,6 +518,7 @@ $dataModel = new OpCacheDataModel();
 
 <body>
     <div id="container">
+        <span style="float:right;font-size:small;">OPcache Status v<?php echo $dataModel->version; ?></span>
         <h1><?php echo $dataModel->getPageTitle(); ?></h1>
 
         <div class="tabs">
@@ -607,22 +641,23 @@ $dataModel = new OpCacheDataModel();
         }
 
         function change() {
-            // Filter out any zero values to see if there is anything left
-            var remove_zero_values = dataset[this.value].filter(function(value) {
-                return value > 0;
-            });
-
             // Skip if the value is undefined for some reason
-            if (typeof dataset[this.value] !== 'undefined' && remove_zero_values.length > 0) {
-                $('#graph').find('> svg').show();
-                path = path.data(pie(dataset[this.value])); // update the data
-                path.transition().duration(750).attrTween("d", arcTween); // redraw the arcs
-            // Hide the graph if we can't draw it correctly, not ideal but this works
-            } else {
-                $('#graph').find('> svg').hide();
-            }
+            if (typeof dataset[this.value] !== 'undefined') {
+                // Filter out any zero values to see if there is anything left
+                var remove_zero_values = dataset[this.value].filter(function(value) {
+                    return value > 0;
+                });
+                if (remove_zero_values.length > 0) {
+                    $('#graph').find('> svg').show();
+                    path = path.data(pie(dataset[this.value])); // update the data
+                    path.transition().duration(750).attrTween("d", arcTween); // redraw the arcs
+                // Hide the graph if we can't draw it correctly, not ideal but this works
+                } else {
+                    $('#graph').find('> svg').hide();
+                }
 
-            set_text(this.value);
+                set_text(this.value);
+            }
         }
 
         function arcTween(a) {

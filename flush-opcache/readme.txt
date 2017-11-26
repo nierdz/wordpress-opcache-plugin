@@ -1,9 +1,9 @@
 === WP OPcache ===
 Contributors: mnttech
-Tags: opcache, cache, flush, php
+Tags: opcache, cache, flush, php, multisite
 Requires at least: 4.3
-Tested up to: 4.8.1
-Stable tag: 2.2
+Tested up to: 4.9
+Stable tag: 2.3
 License: GPLv2
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -38,6 +38,12 @@ Nothing related to this plugin, it's just the way Zend OPcache works... This plu
 4. Statistics tabs
 
 == Changelog ==
+
+= 2.3 =
+* Update statistics tab with this opcache-status project: https://github.com/wp-cloud/opcache-status
+* Add option to hide button in admin bar
+* Minor bugfixes
+* Update French translation
 
 = 2.2 =
 * Bugfix in options
