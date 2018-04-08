@@ -4,78 +4,80 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Flush OPcache 2.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/flush-opcache\n"
-"POT-Creation-Date: 2017-09-08 16:22+0200\n"
-"PO-Revision-Date: 2017-09-08 16:28+0200\n"
-"Last-Translator: \n"
+"POT-Creation-Date: 2017-11-26 20:45:52+00:00\n"
+"PO-Revision-Date: 2018-03-25 04:12+0200\n"
+"Last-Translator: Kolja Spyra <service@kolja-spyra.com>\n"
 "Language-Team: \n"
 "Language: de_DE\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 2.0.3\n"
+"X-Generator: Poedit 2.0.6\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: flush-opcache.php:39 flush-opcache.php:40
+#: flush-opcache.php:76 flush-opcache.php:77 flush-opcache.php:211
 msgid "Flush PHP OPcache"
 msgstr "WP OPCache"
 
-#: flush-opcache.php:56
+#: flush-opcache.php:92
 msgid "Sorry, you can't flush OPcache."
 msgstr "Entschuldigung, du kannst den OPCache nicht leeren."
 
-#: flush-opcache.php:77
+#: flush-opcache.php:118
 msgid "OPcache was successfully flushed."
 msgstr "Der OPCache wurde erfolgreich geleert."
 
-#: flush-opcache.php:83
+#: flush-opcache.php:124 flush-opcache.php:126
 msgid "WP OPcache Options"
-msgstr ""
+msgstr "WP OPCache Optionen"
 
-#: flush-opcache.php:97
+#: flush-opcache.php:144
 msgid "Sorry, you are not allowed to access this page."
 msgstr ""
+"Entschuldigung, du bist leider nicht berechtigt, auf diese Seite zuzugreifen."
 
-#: flush-opcache.php:100
+#: flush-opcache.php:148
 msgid ""
 "You do not have the Zend OPcache extension loaded, you need to install it to "
 "use this plugin."
 msgstr ""
+"Du musst zuerst die Zend OPCache Erweiterung in PHP Installieren und Laden "
+"um dieses Plugin verwenden zu können."
 
-#: flush-opcache.php:104
+#: flush-opcache.php:152
 msgid ""
 "Zend OPcache is loaded but not activated. You need to set opcache.enable=1 "
 "in your php.ini"
 msgstr ""
+"Zend OPcache geladen aber nicht aktiviert. Du musst die Zeile opcache."
+"enable=1 zu deiner php.ini hinzufügen"
 
-#: flush-opcache.php:117
+#: flush-opcache.php:170
 msgid "General Options"
-msgstr ""
+msgstr "Allgemeine Optionen"
 
-#: flush-opcache.php:124
+#: flush-opcache.php:177
 msgid "Automatically flush OPcache after an upgrade"
-msgstr ""
+msgstr "OPcache Automatisch ach einem Upgrade leeren"
 
-#: flush-opcache.php:130
+#: flush-opcache.php:183
 msgid ""
 "Precompile php files each time opcache is flushed aka \"OPcache Prewarm\""
 msgstr ""
+"Kompilieren PHP Dateien jedes mal, wenn der OPCache geleert wurde („OPCache "
+"Prewarm“)"
 
-#: flush-opcache.php:136
-msgid ""
-"Help us to be more famous, it'll add a link to this plugin in your footer"
-msgstr ""
+#: flush-opcache.php:189
+msgid "Hide Flush PHP Opcache button in admin bar"
+msgstr "Die PHP OPCache leeren Schaltfläche in der Admin-Leiste verbergen"
 
-#: flush-opcache.php:157
+#: flush-opcache.php:227
 msgid "General Settings"
-msgstr ""
+msgstr "Allgemeine Einstellungen"
 
-#: flush-opcache.php:158
+#: flush-opcache.php:228
 msgid "Statistics"
-msgstr ""
-
-#: flush-opcache.php:173
-msgid "Powered by Flush OPcache"
-msgstr ""
+msgstr "Statistiken"
 
 #. Plugin Name of the plugin/theme
 msgid "WP OPcache"
@@ -83,18 +85,20 @@ msgstr "WP OPCache"
 
 #. Plugin URI of the plugin/theme
 msgid "http://wordpress.org/plugins/flush-opcache/"
-msgstr ""
+msgstr "http://wordpress.org/plugins/flush-opcache/"
 
 #. Description of the plugin/theme
 msgid ""
 "This plugin allows to manage Zend OPcache inside your WordPress admin "
 "dashboard."
 msgstr ""
+"Dieses Plugin ermöglicht es Zend OPcache innerhalb deinem WordPress-Admin-"
+"Dashboard verwalten."
 
 #. Author of the plugin/theme
 msgid "Infogérance Linux"
-msgstr ""
+msgstr "Infogérance Linux"
 
 #. Author URI of the plugin/theme
 msgid "https://mnt-tech.fr/"
-msgstr ""
+msgstr "https://mnt-tech.fr/"
