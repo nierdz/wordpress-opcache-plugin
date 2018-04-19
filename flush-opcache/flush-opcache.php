@@ -115,7 +115,14 @@ function flush_opcache() {
 }
 
 function show_opcache_notice() {
-	echo '<div class="updated"><p>' . __( 'OPcache was successfully flushed.', 'flush-opcache' ) . '</p></div>';
+	?>
+	<div class="notice notice-success is-dismissible"> 
+		<p><strong><?php _e( 'OPcache was successfully flushed.', 'flush-opcache' ); ?></strong></p>
+		<button type="button" class="notice-dismiss">
+			<span class="screen-reader-text"><?php _e( 'Dismiss this notice.', 'flush-opcache' ); ?></span>
+		</button>
+	</div>
+	<?php
 }
 
 // Add submenu page and register settings

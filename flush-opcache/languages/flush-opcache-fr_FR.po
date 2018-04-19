@@ -4,18 +4,18 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Flush OPcache 2.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/flush-opcache\n"
-"POT-Creation-Date: 2017-11-26 20:45:52+00:00\n"
-"PO-Revision-Date: 2017-11-26 22:03+0100\n"
+"POT-Creation-Date: 2018-04-19 10:25:43+00:00\n"
+"PO-Revision-Date: 2018-04-19 12:34+0200\n"
 "Last-Translator: \n"
 "Language-Team: Kévin MET\n"
 "Language: fr_FR\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 2.0.4\n"
+"X-Generator: Poedit 2.0.6\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
-#: flush-opcache.php:76 flush-opcache.php:77 flush-opcache.php:211
+#: flush-opcache.php:76 flush-opcache.php:77 flush-opcache.php:218
 msgid "Flush PHP OPcache"
 msgstr "Purgez OPcache"
 
@@ -23,19 +23,23 @@ msgstr "Purgez OPcache"
 msgid "Sorry, you can't flush OPcache."
 msgstr "Désolé, vous ne pouvez pas purger OPcache."
 
-#: flush-opcache.php:118
+#: flush-opcache.php:120
 msgid "OPcache was successfully flushed."
 msgstr "OPcache a bien été purgé."
 
-#: flush-opcache.php:124 flush-opcache.php:126
+#: flush-opcache.php:122
+msgid "Dismiss this notice."
+msgstr "Fermer cette notification."
+
+#: flush-opcache.php:131 flush-opcache.php:133
 msgid "WP OPcache Options"
 msgstr "WP OPcache"
 
-#: flush-opcache.php:144
+#: flush-opcache.php:151
 msgid "Sorry, you are not allowed to access this page."
 msgstr "Désolé, vous ne pouvez pas accéder à cette page."
 
-#: flush-opcache.php:148
+#: flush-opcache.php:155
 msgid ""
 "You do not have the Zend OPcache extension loaded, you need to install it to "
 "use this plugin."
@@ -43,7 +47,7 @@ msgstr ""
 "L'extension Zend OPcache n'est pas chargée, vous devez l'installer pour "
 "utiliser ce plugin."
 
-#: flush-opcache.php:152
+#: flush-opcache.php:159
 msgid ""
 "Zend OPcache is loaded but not activated. You need to set opcache.enable=1 "
 "in your php.ini"
@@ -51,30 +55,30 @@ msgstr ""
 "L'extension Zend OPcache est chargée mais n'est pas activée. Vous devez "
 "ajouter opcache.enable=1 dans votre php.ini"
 
-#: flush-opcache.php:170
+#: flush-opcache.php:177
 msgid "General Options"
 msgstr "Options générales"
 
-#: flush-opcache.php:177
+#: flush-opcache.php:184
 msgid "Automatically flush OPcache after an upgrade"
 msgstr "Purger automatiquement OPcache après une mise à jour"
 
-#: flush-opcache.php:183
+#: flush-opcache.php:190
 msgid ""
 "Precompile php files each time opcache is flushed aka \"OPcache Prewarm\""
 msgstr ""
 "Précompiler les fichiers php après une purge d'OPcache aka \"Préchauffe "
 "d'OPcache\""
 
-#: flush-opcache.php:189
+#: flush-opcache.php:196
 msgid "Hide Flush PHP Opcache button in admin bar"
 msgstr "Cacher le bouton de purge d'Opcache dans la barre d'administration"
 
-#: flush-opcache.php:227
+#: flush-opcache.php:234
 msgid "General Settings"
 msgstr "Réglages généraux"
 
-#: flush-opcache.php:228
+#: flush-opcache.php:235
 msgid "Statistics"
 msgstr "Statistiques"
 
