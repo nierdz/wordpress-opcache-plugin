@@ -2,8 +2,8 @@
 Contributors: mnttech
 Tags: opcache, cache, flush, php, multisite
 Requires at least: 4.3
-Tested up to: 4.9.5
-Stable tag: 2.4.2
+Tested up to: 4.9.8
+Stable tag: 2.4.3
 License: GPLv2
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -40,6 +40,9 @@ Nothing related to this plugin, it's just the way Zend OPcache works... This plu
 4. Statistics tabs
 
 == Changelog ==
+
+= 2.4.3 =
+* Fix bug on prewarm cache https://wordpress.org/support/topic/recursivedirectoryiterator-does-not-skip-dotfiles/
 
 = 2.4.2 =
 * Add dismiss button to notice when opcache is closed
