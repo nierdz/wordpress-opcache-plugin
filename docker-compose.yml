@@ -57,6 +57,6 @@ services:
       MYSQL_DATABASE: wordpress
       MYSQL_USER: wp
       MYSQL_PASSWORD: notsecurepassword
-      MYSQL_RANDOM_ROOT_PASSWORD: '1'
+      MYSQL_ROOT_PASSWORD: notsecurepassword
     volumes:
       - ./db:/var/lib/mysql:rw
