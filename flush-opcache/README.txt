@@ -2,8 +2,8 @@
 Contributors: mnttech
 Tags: opcache, cache, flush, php, multisite
 Requires at least: 4.3
-Tested up to: 4.9.8
-Stable tag: 2.4.3
+Tested up to: 5.2.2
+Stable tag: 3.0.0
 License: GPLv2
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -29,7 +29,7 @@ I think the answer is in the plugin's name ;)
 
 = Do I need to know something before install this plugin? =
 
-Yes, If you're working in a shared server, OPcache is shared across all PHP users so when you flush OPcache, you do it on every websites this server hosts.
+Yes, If you're working on a shared server, OPcache is shared across all PHP users so when you flush OPcache, you do it on every websites this server hosts.
 Nothing related to this plugin, it's just the way Zend OPcache works... This plugin only triggers `opcache_reset()` function.
 
 == Screenshots ==
@@ -40,6 +40,12 @@ Nothing related to this plugin, it's just the way Zend OPcache works... This plu
 4. Statistics tabs
 
 == Changelog ==
+
+= 3.0.0 =
+* Complete rewrite in OOP for better maintainability
+* Fix notice bug https://wordpress.org/support/topic/dismissing-the-opcache-was-successfully-flushed-message/
+* Fix bug on prewarm cache https://wordpress.org/support/topic/turning-on-prepcompile-php-option-causes-error/
+* Add continuous deployment with travis
 
 = 2.4.3 =
 * Fix bug on prewarm cache https://wordpress.org/support/topic/recursivedirectoryiterator-does-not-skip-dotfiles/
