@@ -60,3 +60,8 @@ services:
       MYSQL_ROOT_PASSWORD: notsecurepassword
     volumes:
       - ./db:/var/lib/mysql:rw
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin -u root -pnotsecurepassword ping || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
