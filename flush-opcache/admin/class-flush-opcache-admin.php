@@ -10,16 +10,6 @@ class Flush_Opcache_Admin {
     $this->version = $version;
   }
 
-  public function enqueue_style() {
-    wp_enqueue_style(
-      $this->name,
-      plugin_dir_url( __FILE__ ) . 'css/flush-opcache-admin.css',
-      array(),
-      $this->version,
-      'all'
-    );
-  }
-
   public function enqueue_script() {
     wp_enqueue_script(
       'd3js',
