@@ -3,10 +3,54 @@ services:
 - docker
 before_install:
 - docker-compose up -d
-- while [ "$(docker inspect -f {{.State.Health.Status}} db)" != "healthy" ]; do echo 'db is not ready yet'; sleep 1; done
-- while [ "$(docker inspect -f {{.State.Health.Status}} wordpress)" != "healthy" ]; do echo 'wordpress is not ready yet'; sleep 1; done
-- while [ "$(docker inspect -f {{.State.Health.Status}} wordpress-multisite)" != "healthy" ]; do echo 'wordpress-multisite is not ready yet'; sleep 1; done
-- docker run -it --rm --volumes-from wordpress --network container:wordpress wordpress:cli core install --url=localhost:8080 --title="dev" --admin_user="admin" --admin_password="notsecurepassword" --admin_email="nierdz@example.com"
-- docker run -it --rm --volumes-from wordpress-multisite --network container:wordpress-multisite wordpress:cli core multisite-install --title="dev multisite" --admin_user="admin" --admin_password="notsecurepassword" --admin_email="nierdz@example.com"
-- docker run -it --rm --volumes-from wordpress --network container:wordpress wordpress:cli plugin activate flush-opcache
-- docker run -it --rm --volumes-from wordpress-multisite --network container:wordpress-multisite wordpress:cli plugin activate flush-opcache
+- while [ "$(docker inspect -f {{.State.Health.Status}} db)" != "healthy" ]; do
+    echo 'db is not ready yet'; sleep 1;
+  done
+- while [ "$(docker inspect -f {{.State.Health.Status}} wordpress)" != "healthy" ];do
+    echo 'wordpress is not ready yet'; sleep 1;
+  done
+- while [ "$(docker inspect -f {{.State.Health.Status}} wordpress-multisite)" != "healthy" ]; do
+    echo 'wordpress-multisite is not ready yet'; sleep 1;
+  done
+- docker run -it
+    --rm --volumes-from wordpress
+    --network container:wordpress
+    wordpress:cli
+      core install
+      --url=localhost:8080
+      --title="dev"
+      --admin_user="admin"
+      --admin_password="notsecurepassword"
+      --admin_email="nierdz@example.com"
+- docker run -it
+    --rm --volumes-from wordpress-multisite
+    --network container:wordpress-multisite
+    wordpress:cli
+      core multisite-install
+      --title="dev multisite"
+      --admin_user="admin"
+      --admin_password="notsecurepassword"
+      --admin_email="nierdz@example.com"
+- docker run -it
+    --rm --volumes-from wordpress
+    --network container:wordpress
+    wordpress:cli
+      plugin activate
+      flush-opcache
+- docker run -it --rm
+  --volumes-from wordpress-multisite
+  --network container:wordpress-multisite
+  wordpress:cli
+    plugin activate
+    flush-opcache
+deploy:
+  provider: script
+  script: bash travis-to-svn.sh
+  on:
+    tags: true
+    all_branches: true
+    repo: nierdz/flush-opcache
+env:
+  global:
+  - SVN_REPOSITORY=https://plugins.svn.wordpress.org/flush-opcache
+  - SVN_USERNAME=mnttech
