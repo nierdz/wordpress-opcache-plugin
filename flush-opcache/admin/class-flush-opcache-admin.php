@@ -166,7 +166,7 @@ class Flush_Opcache_Admin {
     require_once( "opcache.php" );
   }
 
-  public function register_flush_opache_settings() {
+  public function register_flush_opcache_settings() {
     register_setting( 'flush-opcache-settings-group', 'flush-opcache-upgrade' );
     register_setting( 'flush-opcache-settings-group', 'flush-opcache-hide-button' );
   }
