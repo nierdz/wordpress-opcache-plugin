@@ -33,7 +33,7 @@ class Flush_Opcache_Admin {
   public function flush_opcache_admin_menu() {
     if ( is_multisite() && is_super_admin() && is_main_site() ) {
       add_menu_page(
-        __( 'WP OPcache options', 'flush-opcache' ),
+        __( 'WP OPcache Settings', 'flush-opcache' ),
         __( 'WP OPcache', 'flush-opcache' ),
         'manage_network_options',
         'flush-opcache',
@@ -57,7 +57,7 @@ class Flush_Opcache_Admin {
       );
     } elseif ( ! is_multisite() && is_admin() ) {
       add_menu_page(
-        __( 'WP OPcache options', 'flush-opcache' ),
+        __( 'WP OPcache Settings', 'flush-opcache' ),
         __( 'WP OPcache', 'flush-opcache' ),
         'manage_options',
         'flush-opcache',
