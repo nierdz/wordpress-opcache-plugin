@@ -1,0 +1,87 @@
+# Copyright (C) 2019 nierdz
+# This file is distributed under the same license as the WP OPcache plugin.
+msgid ""
+msgstr ""
+"Project-Id-Version: WP OPcache 3.0.0\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/flush-opcache\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2019-09-16T19:18:58+00:00\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"X-Generator: WP-CLI 2.3.0\n"
+"X-Domain: flush-opcache\n"
+
+#. Plugin Name of the plugin
+#: admin/class-flush-opcache-admin.php:37
+#: admin/class-flush-opcache-admin.php:61
+msgid "WP OPcache"
+msgstr ""
+
+#. Plugin URI of the plugin
+msgid "http://wordpress.org/plugins/flush-opcache/"
+msgstr ""
+
+#. Description of the plugin
+msgid "This plugin allows to manage Zend OPcache inside your WordPress admin dashboard."
+msgstr ""
+
+#. Author of the plugin
+msgid "nierdz"
+msgstr ""
+
+#. Author URI of the plugin
+msgid "https://igln.fr/"
+msgstr ""
+
+#: admin/class-flush-opcache-admin.php:36
+#: admin/class-flush-opcache-admin.php:44
+#: admin/class-flush-opcache-admin.php:60
+#: admin/class-flush-opcache-admin.php:68
+msgid "WP OPcache Settings"
+msgstr ""
+
+#: admin/class-flush-opcache-admin.php:52
+#: admin/class-flush-opcache-admin.php:76
+msgid "WP OPcache Statistics"
+msgstr ""
+
+#: admin/class-flush-opcache-admin.php:53
+#: admin/class-flush-opcache-admin.php:77
+msgid "Statistics"
+msgstr ""
+
+#: admin/class-flush-opcache-admin.php:91
+msgid "You do not have the Zend OPcache extension loaded, you need to install it to use this plugin."
+msgstr ""
+
+#: admin/class-flush-opcache-admin.php:96
+msgid "Zend OPcache is loaded but not activated. You need to set opcache.enable=1 in your php.ini"
+msgstr ""
+
+#: admin/class-flush-opcache-admin.php:100
+msgid "Settings"
+msgstr ""
+
+#: admin/class-flush-opcache-admin.php:118
+msgid "Automatically flush OPcache after an upgrade"
+msgstr ""
+
+#: admin/class-flush-opcache-admin.php:131
+msgid "Hide Flush PHP Opcache button in admin bar"
+msgstr ""
+
+#: admin/class-flush-opcache-admin.php:176
+#: admin/class-flush-opcache-admin.php:177
+msgid "Flush PHP OPcache"
+msgstr ""
+
+#: admin/class-flush-opcache-admin.php:189
+msgid "Sorry, you can't flush OPcache."
+msgstr ""
+
+#: admin/class-flush-opcache-admin.php:223
+msgid "OPcache was successfully flushed."
+msgstr ""

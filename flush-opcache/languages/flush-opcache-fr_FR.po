@@ -1,0 +1,104 @@
+# Copyright (C) 2019 nierdz
+# This file is distributed under the same license as the WP OPcache plugin.
+msgid ""
+msgstr ""
+"Project-Id-Version: WP OPcache 3.0.0\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/flush-opcache\n"
+"POT-Creation-Date: 2019-09-16T19:18:58+00:00\n"
+"PO-Revision-Date: 2019-09-16 21:29+0200\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: fr_FR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 2.2.3\n"
+"X-Domain: flush-opcache\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+#. Plugin Name of the plugin
+#: admin/class-flush-opcache-admin.php:37
+#: admin/class-flush-opcache-admin.php:61
+msgid "WP OPcache"
+msgstr "WP OPcache"
+
+#. Plugin URI of the plugin
+msgid "http://wordpress.org/plugins/flush-opcache/"
+msgstr "http://wordpress.org/plugins/flush-opcache/"
+
+#. Description of the plugin
+msgid ""
+"This plugin allows to manage Zend OPcache inside your WordPress admin "
+"dashboard."
+msgstr ""
+"Ce plugin permet de gérer Zend OPcache depuis le tableau de bord "
+"d'administration WordPress."
+
+#. Author of the plugin
+msgid "nierdz"
+msgstr "nierdz"
+
+#. Author URI of the plugin
+msgid "https://igln.fr/"
+msgstr "https://igln.fr/"
+
+#: admin/class-flush-opcache-admin.php:36
+#: admin/class-flush-opcache-admin.php:44
+#: admin/class-flush-opcache-admin.php:60
+#: admin/class-flush-opcache-admin.php:68
+msgid "WP OPcache Settings"
+msgstr "Options WP OPcache"
+
+#: admin/class-flush-opcache-admin.php:52
+#: admin/class-flush-opcache-admin.php:76
+msgid "WP OPcache Statistics"
+msgstr "Statistiques WP OPcache"
+
+#: admin/class-flush-opcache-admin.php:53
+#: admin/class-flush-opcache-admin.php:77
+msgid "Statistics"
+msgstr "Statistiques"
+
+#: admin/class-flush-opcache-admin.php:91
+msgid ""
+"You do not have the Zend OPcache extension loaded, you need to install it to "
+"use this plugin."
+msgstr ""
+"L'extension Zend OPcache n'est pas chargée, vous devez l'installer pour "
+"utiliser ce plugin."
+
+#: admin/class-flush-opcache-admin.php:96
+msgid ""
+"Zend OPcache is loaded but not activated. You need to set opcache.enable=1 "
+"in your php.ini"
+msgstr ""
+"Zend OPcache est chargé mais non activé. Vous devez mettre opcache.enable=1 "
+"dans votre php.ini"
+
+#: admin/class-flush-opcache-admin.php:100
+msgid "Settings"
+msgstr "Options"
+
+#: admin/class-flush-opcache-admin.php:118
+msgid "Automatically flush OPcache after an upgrade"
+msgstr "Purger OPcache automatiquement après une mise à jour"
+
+#: admin/class-flush-opcache-admin.php:131
+msgid "Hide Flush PHP Opcache button in admin bar"
+msgstr "Cacher le bouton Purger PHP OPcache"
+
+#: admin/class-flush-opcache-admin.php:176
+#: admin/class-flush-opcache-admin.php:177
+msgid "Flush PHP OPcache"
+msgstr "Purger PHP OPcache"
+
+#: admin/class-flush-opcache-admin.php:189
+msgid "Sorry, you can't flush OPcache."
+msgstr "Désolé, vous ne pouvez pas purger OPcache."
+
+#: admin/class-flush-opcache-admin.php:223
+msgid "OPcache was successfully flushed."
+msgstr "OPcache a été purgé avec succès."
+
+#~ msgid "WP OPcache options"
+#~ msgstr "options WP OPcache"
