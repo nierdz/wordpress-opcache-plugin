@@ -48,7 +48,7 @@ deploy:
   script: bash travis-to-svn.sh
   on:
     tags: true
-    all_branches: true
+    branch: master
     repo: nierdz/flush-opcache
 env:
   global:
