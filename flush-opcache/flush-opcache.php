@@ -1,6 +1,9 @@
 <?php
-
 /**
+ * Main plugin file
+ *
+ * @package flush-opcache
+ *
  * @wordpress-plugin
  * Plugin Name:       WP OPcache
  * Plugin URI:        http://wordpress.org/plugins/flush-opcache/
@@ -24,6 +27,7 @@ define( 'FLUSH_OPCACHE_NAME', 'flush-opcache' );
 
 require plugin_dir_path( __FILE__ ) . 'includes/class-flush-opcache.php';
 
+/** Main function to fire plugin execution */
 function run_flush_opcache() {
 	$plugin = new Flush_Opcache();
 }
