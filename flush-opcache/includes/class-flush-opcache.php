@@ -19,7 +19,7 @@ class Flush_Opcache {
 	}
 
 	private function set_locale() {
-		$plugin_i18n = new Flush_Opcache_i18n();
+		$plugin_i18n = new Flush_Opcache_I18n();
 		add_action( 'plugins_loaded', array( $plugin_i18n, 'load_plugin_textdomain' ) );
 	}
 
