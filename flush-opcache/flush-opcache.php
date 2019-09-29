@@ -16,7 +16,7 @@
 
 // If this file is called directly, abort.
 if ( ! defined( 'WPINC' ) ) {
-  die;
+	die;
 }
 
 define( 'FLUSH_OPCACHE_VERSION', '3.0.0' );
@@ -25,7 +25,7 @@ define( 'FLUSH_OPCACHE_NAME', 'flush-opcache' );
 require plugin_dir_path( __FILE__ ) . 'includes/class-flush-opcache.php';
 
 function run_flush_opcache() {
-  $plugin = new Flush_Opcache();
+	$plugin = new Flush_Opcache();
 }
 
 run_flush_opcache();
