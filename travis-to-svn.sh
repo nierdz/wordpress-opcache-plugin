@@ -30,7 +30,7 @@ svn cp \
 # Remove missing files from svn
 missing_files=$(svn status | grep -E "^\!.*$" | awk '{print $2}')
 for file in $missing_files; do
-	svn rm "$file"
+  svn rm "$file"
 done
 
 # Push to WordPress
