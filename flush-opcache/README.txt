@@ -2,8 +2,8 @@
 Contributors: mnttech
 Tags: opcache, cache, flush, php, multisite
 Requires at least: 4.3
-Tested up to: 5.2.3
-Stable tag: 3.0.0
+Tested up to: 5.2.4
+Stable tag: 3.0.1
 License: GPLv2
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -40,6 +40,9 @@ Nothing related to this plugin, it's just the way Zend OPcache works... This plu
 4. Statistics tabs
 
 == Changelog ==
+
+= 3.0.1 =
+* Fully compliant with WordPress coding standards
 
 = 3.0.0 =
 * Complete rewrite in OOP for better maintainability
