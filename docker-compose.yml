@@ -1,0 +1,67 @@
+version: '3'
+services:
+  wordpress:
+    container_name: wordpress
+    image: wordpress:${WP_VERSION}
+    restart: always
+    ports:
+      - 8080:80
+    environment:
+      WORDPRESS_DB_HOST: db
+      WORDPRESS_DB_USER: wp
+      WORDPRESS_DB_PASSWORD: notsecurepassword
+      WORDPRESS_DB_NAME: wordpress
+      WORDPRESS_DEBUG: '1'
+    volumes:
+      - ./flush-opcache:/var/www/html/wp-content/plugins/flush-opcache
+    healthcheck:
+      test: ["CMD", "/bin/bash", "-c", "printf 'GET / HTTP/1.1\n\n' > /dev/tcp/127.0.0.1/80"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  wordpress-multisite:
+    container_name: wordpress-multisite
+    image: wordpress:${WP_VERSION}
+    restart: always
+    ports:
+      - 80:80
+    environment:
+      WORDPRESS_DB_HOST: db
+      WORDPRESS_DB_USER: wp
+      WORDPRESS_DB_PASSWORD: notsecurepassword
+      WORDPRESS_DB_NAME: wordpress
+      WORDPRESS_DEBUG: '1'
+      WORDPRESS_TABLE_PREFIX: multisite_
+      WORDPRESS_CONFIG_EXTRA: |
+        define('WP_ALLOW_MULTISITE', true);
+        define('MULTISITE', true);
+        define('SUBDOMAIN_INSTALL', false);
+        define('DOMAIN_CURRENT_SITE', 'localhost');
+        define('PATH_CURRENT_SITE', '/');
+        define('SITE_ID_CURRENT_SITE', 1);
+        define('BLOG_ID_CURRENT_SITE', 1);
+    volumes:
+      - ./flush-opcache:/var/www/html/wp-content/plugins/flush-opcache
+    healthcheck:
+      test: ["CMD", "/bin/bash", "-c", "printf 'GET / HTTP/1.1\n\n' > /dev/tcp/127.0.0.1/80"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  db:
+    container_name: db
+    image: mysql:5.7
+    restart: always
+    environment:
+      MYSQL_DATABASE: wordpress
+      MYSQL_USER: wp
+      MYSQL_PASSWORD: notsecurepassword
+      MYSQL_ROOT_PASSWORD: notsecurepassword
+    volumes:
+      - ./db:/var/lib/mysql:rw
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin -u root -pnotsecurepassword ping || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
