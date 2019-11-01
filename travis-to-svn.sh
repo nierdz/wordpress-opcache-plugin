@@ -27,6 +27,12 @@ svn add --force assets
 svn cp \
   trunk "tags/$TRAVIS_TAG"
 
+# Remove missing files from svn
+missing_files=$(svn status | grep -E "^\!.*$" | awk '{print $2}')
+for file in $missing_files; do
+	svn rm "$file"
+done
+
 # Push to WordPress
 svn ci \
   --message "Release $TRAVIS_TAG" \
