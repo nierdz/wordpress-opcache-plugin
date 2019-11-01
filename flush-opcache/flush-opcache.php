@@ -8,7 +8,7 @@
  * Plugin Name:       WP OPcache
  * Plugin URI:        http://wordpress.org/plugins/flush-opcache/
  * Description:       This plugin allows to manage Zend OPcache inside your WordPress admin dashboard.
- * Version:           3.0.0
+ * Version:           3.0.1
  * Author:            nierdz
  * Author URI:        https://igln.fr/
  * License:           GPL-2.0+
