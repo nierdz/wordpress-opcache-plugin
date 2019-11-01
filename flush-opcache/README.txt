@@ -13,7 +13,7 @@ This plugin allows to manage Zend OPcache inside your WordPress admin dashboard.
 
 This extension adds a button in your admin area to flush OPcache easily. It supports both memory and file caching transparently.
 If this is a multisite installation, it only shows up in network admin dashboard.
-There is a submenu page with all statistics about OPcache. There is an option to automatically flush OPcache when a WordPress or plugin update occurred. 
+There is a submenu page with all statistics about OPcache. There is an option to automatically flush OPcache when a WordPress or plugin update occurred.
 The statistics tabs relies on https://github.com/wp-cloud/opcache-status
 If you want to add a translation in your own language, you can use flush-opcache.pot located in languages folder and send me by email.
 
@@ -68,7 +68,7 @@ Nothing related to this plugin, it's just the way Zend OPcache works... This plu
 
 = 2.2 =
 * Bugfix in options
-* Compatible with multisite 
+* Compatible with multisite
 * Remove powered by option
 
 = 2.1 =
