@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 
-set -o pipefail
 set -o nounset
 set -o errexit
 
@@ -26,6 +25,12 @@ svn add --force assets
 # Create SVN tag
 svn cp \
   trunk "tags/$TRAVIS_TAG"
+
+#Remove missing files from svn
+missing_files=$(svn status | grep -E "^\!.*$" | awk '{print $2}')
+for file in $missing_files; do
+  svn rm "$file"
+done
 
 # Push to WordPress
 svn ci \
