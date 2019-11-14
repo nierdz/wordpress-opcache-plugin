@@ -14,6 +14,7 @@ install: ## Install everything
 	@$(MAKE) install-wordpress-multisite
 	@$(MAKE) activate-plugin
 	@$(MAKE) activate-plugin-multisite
+	@$(MAKE) install-wpcs
 
 docker-up: ## Simply run docker-compose up -d
 	$(info --> Simply run docker-compose up -d)
@@ -73,3 +74,19 @@ activate-plugin-multisite: ## Activate WP-OPcache on WordPress Multisite
 		wordpress:cli \
 			plugin activate \
 			flush-opcache
+
+install-wpcs: ## Install and setup wpcs
+	$(info --> Install and setup wpcs)
+	@composer create-project \
+		wp-coding-standards/wpcs \
+		--no-dev
+	@wpcs/vendor/bin/phpcs \
+		--config-set installed_paths wpcs/
+
+tests: ## Run all tests
+	$(info --> Run all test)
+	@wpcs/vendor/bin/phpcs \
+		-v \
+		--ignore=flush-opcache/admin/opcache.php,flush-opcache/admin/js/d3.min.js \
+		--standard=WordPress \
+		flush-opcache/
