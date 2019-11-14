@@ -4,15 +4,7 @@ services:
 before_install:
 - make install
 script:
-- composer create-project
-    wp-coding-standards/wpcs
-    --no-dev
-- wpcs/vendor/bin/phpcs
-    --config-set installed_paths wpcs/
-- wpcs/vendor/squizlabs/php_codesniffer/bin/phpcs
-    --ignore=flush-opcache/admin/opcache.php,flush-opcache/admin/js/d3.min.js
-    --standard=WordPress
-    flush-opcache/
+- make tests
 deploy:
   provider: script
   script: bash travis-to-svn.sh
