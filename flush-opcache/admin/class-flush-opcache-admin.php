@@ -224,7 +224,7 @@ class Flush_Opcache_Admin {
 		if ( ! is_admin() ) {
 			return false;
 		}
-		if ( get_site_option( 'flush-opcache-hide-button' ) === 1 ) {
+		if ( get_site_option( 'flush-opcache-hide-button' ) === '1' ) {
 			return false;
 		}
 		$base_url   = remove_query_arg( 'settings-updated' );
