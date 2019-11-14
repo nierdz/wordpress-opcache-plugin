@@ -2,57 +2,9 @@ language: generic
 services:
 - docker
 before_install:
-- docker-compose up -d
-- while [ "$(docker inspect -f {{.State.Health.Status}} db)" != "healthy" ]; do
-    echo 'db is not ready yet'; sleep 1;
-  done
-- while [ "$(docker inspect -f {{.State.Health.Status}} wordpress)" != "healthy" ];do
-    echo 'wordpress is not ready yet'; sleep 1;
-  done
-- while [ "$(docker inspect -f {{.State.Health.Status}} wordpress-multisite)" != "healthy" ]; do
-    echo 'wordpress-multisite is not ready yet'; sleep 1;
-  done
-- docker run -it
-    --rm --volumes-from wordpress
-    --network container:wordpress
-    wordpress:cli
-      core install
-      --url=localhost:8080
-      --title="dev"
-      --admin_user="admin"
-      --admin_password="notsecurepassword"
-      --admin_email="nierdz@example.com"
-- docker run -it
-    --rm --volumes-from wordpress-multisite
-    --network container:wordpress-multisite
-    wordpress:cli
-      core multisite-install
-      --title="dev multisite"
-      --admin_user="admin"
-      --admin_password="notsecurepassword"
-      --admin_email="nierdz@example.com"
-- docker run -it
-    --rm --volumes-from wordpress
-    --network container:wordpress
-    wordpress:cli
-      plugin activate
-      flush-opcache
-- docker run -it --rm
-  --volumes-from wordpress-multisite
-  --network container:wordpress-multisite
-  wordpress:cli
-    plugin activate
-    flush-opcache
+- make install
 script:
-- composer create-project
-    wp-coding-standards/wpcs
-    --no-dev
-- wpcs/vendor/bin/phpcs
-    --config-set installed_paths wpcs/
-- wpcs/vendor/squizlabs/php_codesniffer/bin/phpcs
-    --ignore=flush-opcache/admin/opcache.php,flush-opcache/admin/js/d3.min.js
-    --standard=WordPress
-    flush-opcache/
+- make tests
 deploy:
   provider: script
   script: bash travis-to-svn.sh
