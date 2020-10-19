@@ -6,6 +6,9 @@ set -o errexit
 DEBUG=${DEBUG:=0}
 [[ $DEBUG -eq 1 ]] && set -o xtrace
 
+SVN_REPOSITORY=https://plugins.svn.wordpress.org/flush-opcache
+SVN_USERNAME=mnttech
+
 # Checkout SVN repository
 svn co "$SVN_REPOSITORY" ./svn
 
@@ -24,7 +27,7 @@ svn add --force assets
 
 # Create SVN tag
 svn cp \
-  trunk "tags/$TRAVIS_TAG"
+  trunk "tags/${GITHUB_REF##*/}"
 
 #Remove missing files from svn
 missing_files=$(svn status | grep -E "^\!.*$" | awk '{print $2}')
@@ -34,7 +37,7 @@ done
 
 # Push to WordPress
 svn ci \
-  --message "Release $TRAVIS_TAG" \
+  --message "Release ${GITHUB_REF##*/}" \
   --username "$SVN_USERNAME" \
   --password "$SVN_PASSWORD" \
   --non-interactive

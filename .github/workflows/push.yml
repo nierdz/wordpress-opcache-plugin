@@ -1,0 +1,16 @@
+name: PUSH
+
+on:
+  push:
+    tags:
+      - "*"
+
+jobs:
+  github-to-svn:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: push to svn
+      run: bash github-to-svn.sh
+      env:
+        SVN_PASSWORD: ${{ secrets.SVN_PASSWORD }}
