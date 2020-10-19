@@ -34,11 +34,12 @@ wait-up: ## Wait for services to be up
 
 install-wordpress: ## Run WordPress installer using cli
 	$(info --> Run WordPress installer using cli)
-	@docker run -it \
-		--rm --volumes-from wordpress \
+	@docker run \
+		--rm \
+		--volumes-from wordpress \
 		--network container:wordpress \
 		wordpress:cli \
-			core install \
+		wp core install \
 			--url=localhost:8080 \
 			--title="dev" \
 			--admin_user="admin" \
@@ -47,11 +48,12 @@ install-wordpress: ## Run WordPress installer using cli
 
 install-wordpress-multisite: ## Run WordPress Multisite installer using cli
 	$(info --> Run WordPress Multisite installer using cli)
-	@docker run -it \
-		--rm --volumes-from wordpress-multisite \
+	@docker run \
+		--rm \
+		--volumes-from wordpress-multisite \
 		--network container:wordpress-multisite \
 		wordpress:cli \
-			core multisite-install \
+			wp core multisite-install \
 			--title="dev multisite" \
 			--admin_user="admin" \
 			--admin_password="notsecurepassword" \
@@ -59,20 +61,22 @@ install-wordpress-multisite: ## Run WordPress Multisite installer using cli
 
 activate-plugin: ## Activate WP-OPcache on WordPress
 	$(info --> Activate WP-OPcache on WordPress)
-	@docker run -it \
-		--rm --volumes-from wordpress \
+	@docker run \
+		--rm \
+		--volumes-from wordpress \
 		--network container:wordpress \
 		wordpress:cli \
-			plugin activate \
+			wp plugin activate \
 			flush-opcache
 
 activate-plugin-multisite: ## Activate WP-OPcache on WordPress Multisite
 	$(info --> Activate WP-OPcache on WordPress Multisite)
-	@docker run -it --rm \
+	@docker run \
+		--rm \
 		--volumes-from wordpress-multisite \
 		--network container:wordpress-multisite \
 		wordpress:cli \
-			plugin activate \
+			wp plugin activate \
 			flush-opcache
 
 install-wpcs: ## Install and setup wpcs
