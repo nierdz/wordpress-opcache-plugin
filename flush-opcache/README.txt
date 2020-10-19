@@ -44,6 +44,7 @@ Nothing related to this plugin, it's just the way Zend OPcache works... This plu
 = 3.0.4 =
 * Tested with WordPress 5.5.1
 * Switch from travis to github actions
+* Change screenshots from settings
 
 = 3.0.3 =
 * Tested with WordPress 5.4
