@@ -1,7 +1,7 @@
 MAIN_DIR := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 VIRTUALENV_DIR := $(MAIN_DIR)/venv
 VIRTUAL_ENV_DISABLE_PROMPT = true
-PATH := $(VIRTUALENV_DIR)/bin:/usr/local/bin:/bin:$(PATH)
+PATH := $(VIRTUALENV_DIR)/bin:vendor/bin:$(PATH)
 SHELL := /usr/bin/env bash
 
 .DEFAULT_GOAL := help
@@ -89,7 +89,7 @@ composer-install: ## Install and setup wpcs
 	composer install
 
 tests: ## Run all phpcs tests
-	vendor/bin/phpcs \
+	phpcs \
 		-v \
 		--ignore=flush-opcache/admin/opcache.php,flush-opcache/admin/js/d3.min.js \
 		--standard=WordPress \
