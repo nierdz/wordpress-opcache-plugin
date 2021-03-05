@@ -1,4 +1,5 @@
-[![CI Status](https://github.com/nierdz/flush-opcache/workflows/CI/badge.svg?branch=master)](https://github.com/nierdz/flush-opcache/actions?query=workflow%3ACI)
+[![GitHub Workflow Status](https://img.shields.io/github/workflow/status/nierdz/flush-opcache/CI)](https://github.com/nierdz/flush-opcache/actions/workflows/ci.yml)
+[![WordPress Plugin Downloads](https://img.shields.io/wordpress/plugin/dm/flush-opcache)](https://wordpress.org/plugins/flush-opcache/)
 
 # WP-OPcache : WordPress plugin to manage OPcache
 https://wordpress.org/plugins/flush-opcache/
