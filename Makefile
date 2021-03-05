@@ -6,39 +6,28 @@ help: ## Print this help
 		| sort \
 		| awk 'BEGIN { FS = ":.*?## " }; { printf "\033[36m%-30s\033[0m %s\n", $$1, $$2 }'
 
-install: ## Install everything
-	$(info --> Install everything)
-	@$(MAKE) docker-up
-	@$(MAKE) wait-up
-	@$(MAKE) install-wordpress
-	@$(MAKE) install-wordpress-multisite
-	@$(MAKE) activate-plugin
-	@$(MAKE) activate-plugin-multisite
-	@$(MAKE) composer-install
+install: docker-up wait-up install-wordpress install-wordpress-multisite activate-plugin activate-plugin-multisite composer-install ## Install everything
 
 docker-up: ## Simply run docker-compose up -d
-	$(info --> Simply run docker-compose up -d)
-	@docker-compose up -d
+	docker-compose up -d
 
 wait-up: ## Wait for services to be up
-	$(info --> Wait for services to be up)
-	@while [ "$$(docker inspect -f {{.State.Health.Status}} db)" != "healthy" ]; do \
+	while [ "$$(docker inspect -f {{.State.Health.Status}} db)" != "healthy" ]; do \
 		echo 'db is not ready yet'; sleep 1; \
 		done
-	@while [ "$$(docker inspect -f {{.State.Health.Status}} wordpress)" != "healthy" ]; do \
+	while [ "$$(docker inspect -f {{.State.Health.Status}} wordpress)" != "healthy" ]; do \
 		echo 'wordpress is not ready yet'; sleep 1; \
 		done
-	@while [ "$$(docker inspect -f {{.State.Health.Status}} wordpress-multisite)" != "healthy" ]; do \
+	while [ "$$(docker inspect -f {{.State.Health.Status}} wordpress-multisite)" != "healthy" ]; do \
 		echo 'wordpress-multisite is not ready yet'; sleep 1; \
 		done
 
 install-wordpress: ## Run WordPress installer using cli
-	$(info --> Run WordPress installer using cli)
-	@docker run \
+	docker run \
 		--rm \
 		--volumes-from wordpress \
 		--network container:wordpress \
-		wordpress:cli \
+		wordpress:cli-php7.4 \
 		wp core install \
 			--url=localhost:8080 \
 			--title="dev" \
@@ -47,12 +36,11 @@ install-wordpress: ## Run WordPress installer using cli
 			--admin_email="nierdz@example.com"
 
 install-wordpress-multisite: ## Run WordPress Multisite installer using cli
-	$(info --> Run WordPress Multisite installer using cli)
-	@docker run \
+	docker run \
 		--rm \
 		--volumes-from wordpress-multisite \
 		--network container:wordpress-multisite \
-		wordpress:cli \
+		wordpress:cli-php7.4 \
 			wp core multisite-install \
 			--title="dev multisite" \
 			--admin_user="admin" \
@@ -60,8 +48,7 @@ install-wordpress-multisite: ## Run WordPress Multisite installer using cli
 			--admin_email="nierdz@example.com"
 
 activate-plugin: ## Activate WP-OPcache on WordPress
-	$(info --> Activate WP-OPcache on WordPress)
-	@docker run \
+	docker run \
 		--rm \
 		--volumes-from wordpress \
 		--network container:wordpress \
@@ -70,8 +57,7 @@ activate-plugin: ## Activate WP-OPcache on WordPress
 			flush-opcache
 
 activate-plugin-multisite: ## Activate WP-OPcache on WordPress Multisite
-	$(info --> Activate WP-OPcache on WordPress Multisite)
-	@docker run \
+	docker run \
 		--rm \
 		--volumes-from wordpress-multisite \
 		--network container:wordpress-multisite \
@@ -80,12 +66,10 @@ activate-plugin-multisite: ## Activate WP-OPcache on WordPress Multisite
 			flush-opcache
 
 composer-install: ## Install and setup wpcs
-	$(info --> Install and setup wpcs)
-	@composer install
+	composer install
 
 tests: ## Run all tests
-	$(info --> Run all test)
-	@vendor/bin/phpcs \
+	vendor/bin/phpcs \
 		-v \
 		--ignore=flush-opcache/admin/opcache.php,flush-opcache/admin/js/d3.min.js \
 		--standard=WordPress \
