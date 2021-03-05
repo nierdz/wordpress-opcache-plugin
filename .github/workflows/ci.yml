@@ -3,7 +3,7 @@ name: CI
 on: push
 
 jobs:
-  check:
+  phpcs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
@@ -11,3 +11,17 @@ jobs:
       run: make install
     - name: run all checks
       run: make tests
+  pre-commit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: set up Python 3.8
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.8
+      - name: install dependencies
+        run: python -m pip install --upgrade pip virtualenv
+      - name: install pre-commit
+        run: make install-pip-packages
+      - name: run pre-commit
+        run: make pre-commit
