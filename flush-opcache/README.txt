@@ -36,7 +36,7 @@ Nothing related to this plugin, it's just the way Zend OPcache works... This plu
 == Changelog ==
 
 = 3.1.1 =
-Tested with WordPress 5.7
+* Tested with WordPress 5.7.0
 
 = 3.1.0 =
 * Switch to Automattic/VIP-Coding-Standards
