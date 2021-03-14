@@ -4,47 +4,19 @@ services:
     container_name: wordpress
     image: wordpress:${WP_VERSION}
     restart: always
-    ports:
-      - 8080:80
     environment:
-      WORDPRESS_DB_HOST: db
-      WORDPRESS_DB_USER: wp
-      WORDPRESS_DB_PASSWORD: notsecurepassword
-      WORDPRESS_DB_NAME: wordpress
-      WORDPRESS_DEBUG: '1'
-    volumes:
-      - ./flush-opcache:/var/www/html/wp-content/plugins/flush-opcache
-    healthcheck:
-      test: ["CMD", "/bin/bash", "-c", "printf 'GET / HTTP/1.1\n\n' > /dev/tcp/127.0.0.1/80"]
-      interval: 10s
-      timeout: 5s
-      retries: 3
-
-  wordpress-multisite:
-    container_name: wordpress-multisite
-    image: wordpress:${WP_VERSION}
-    restart: always
+      WORDPRESS_DB_HOST: ${WORDPRESS_DB_HOST}
+      WORDPRESS_DB_USER: ${WORDPRESS_DB_USER}
+      WORDPRESS_DB_PASSWORD: ${WORDPRESS_DB_PASSWORD}
+      WORDPRESS_DB_NAME: ${WORDPRESS_DB_NAME}
+      WORDPRESS_DEBUG: ${WORDPRESS_DEBUG}
     ports:
       - 80:80
-    environment:
-      WORDPRESS_DB_HOST: db
-      WORDPRESS_DB_USER: wp
-      WORDPRESS_DB_PASSWORD: notsecurepassword
-      WORDPRESS_DB_NAME: wordpress
-      WORDPRESS_DEBUG: '1'
-      WORDPRESS_TABLE_PREFIX: multisite_
-      WORDPRESS_CONFIG_EXTRA: |
-        define('WP_ALLOW_MULTISITE', true);
-        define('MULTISITE', true);
-        define('SUBDOMAIN_INSTALL', false);
-        define('DOMAIN_CURRENT_SITE', 'localhost');
-        define('PATH_CURRENT_SITE', '/');
-        define('SITE_ID_CURRENT_SITE', 1);
-        define('BLOG_ID_CURRENT_SITE', 1);
     volumes:
+      - wp_data:/var/www/html
       - ./flush-opcache:/var/www/html/wp-content/plugins/flush-opcache
     healthcheck:
-      test: ["CMD", "/bin/bash", "-c", "printf 'GET / HTTP/1.1\n\n' > /dev/tcp/127.0.0.1/80"]
+      test: ["CMD", "/bin/bash", "-c", "curl -s -o /dev/null http://localhost"]
       interval: 10s
       timeout: 5s
       retries: 3
@@ -54,10 +26,10 @@ services:
     image: mysql:5.7
     restart: always
     environment:
-      MYSQL_DATABASE: wordpress
-      MYSQL_USER: wp
-      MYSQL_PASSWORD: notsecurepassword
-      MYSQL_ROOT_PASSWORD: notsecurepassword
+      MYSQL_DATABASE: ${WORDPRESS_DB_NAME}
+      MYSQL_USER: ${WORDPRESS_DB_USER}
+      MYSQL_PASSWORD: ${WORDPRESS_DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${WORDPRESS_DB_PASSWORD}
     volumes:
       - ./db:/var/lib/mysql:rw
     healthcheck:
@@ -65,3 +37,29 @@ services:
       interval: 10s
       timeout: 5s
       retries: 3
+
+  wp-cli:
+    container_name: wp-cli
+    image: wordpress:cli-php7.4
+    user: xfs # id 33 (id of www-data in other wp images)
+    environment:
+      WORDPRESS_DB_HOST: ${WORDPRESS_DB_HOST}
+      WORDPRESS_DB_USER: ${WORDPRESS_DB_USER}
+      WORDPRESS_DB_PASSWORD: ${WORDPRESS_DB_PASSWORD}
+      WORDPRESS_DB_NAME: ${WORDPRESS_DB_NAME}
+      WORDPRESS_DEBUG: ${WORDPRESS_DEBUG}
+    volumes:
+      - wp_data:/var/www/html
+      - ./flush-opcache:/var/www/html/wp-content/plugins/flush-opcache
+    command: >
+      /bin/bash -c "while !</dev/tcp/db/3306; do sleep 1; done;
+      wp core install \
+        --url=http://localhost \
+        --title=dev \
+        --admin_user=admin \
+        --admin_password=notsecurepassword \
+        --admin_email=nierdz@example.com;
+      wp plugin activate flush-opcache"
+
+volumes:
+  wp_data:

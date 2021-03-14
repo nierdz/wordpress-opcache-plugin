@@ -26,64 +26,7 @@ pre-commit-install: ## Install pre-commit hooks
 
 install-pip-packages: $(VIRTUALENV_DIR) $(VIRTUALENV_DIR)/bin/pre-commit ## Install python pip packages in a virtual environment
 
-install: docker-up wait-up install-wordpress install-wordpress-multisite activate-plugin activate-plugin-multisite composer-install ## Install everything
-
-docker-up: ## Simply run docker-compose up -d
-	docker-compose up -d
-
-wait-up: ## Wait for services to be up
-	while [ "$$(docker inspect -f {{.State.Health.Status}} db)" != "healthy" ]; do \
-		echo 'db is not ready yet'; sleep 1; \
-		done
-	while [ "$$(docker inspect -f {{.State.Health.Status}} wordpress)" != "healthy" ]; do \
-		echo 'wordpress is not ready yet'; sleep 1; \
-		done
-	while [ "$$(docker inspect -f {{.State.Health.Status}} wordpress-multisite)" != "healthy" ]; do \
-		echo 'wordpress-multisite is not ready yet'; sleep 1; \
-		done
-
-install-wordpress: ## Run WordPress installer using cli
-	docker run \
-		--rm \
-		--volumes-from wordpress \
-		--network container:wordpress \
-		wordpress:cli-php7.4 \
-		wp core install \
-			--url=localhost:8080 \
-			--title="dev" \
-			--admin_user="admin" \
-			--admin_password="notsecurepassword" \
-			--admin_email="nierdz@example.com"
-
-install-wordpress-multisite: ## Run WordPress Multisite installer using cli
-	docker run \
-		--rm \
-		--volumes-from wordpress-multisite \
-		--network container:wordpress-multisite \
-		wordpress:cli-php7.4 \
-			wp core multisite-install \
-			--title="dev multisite" \
-			--admin_user="admin" \
-			--admin_password="notsecurepassword" \
-			--admin_email="nierdz@example.com"
-
-activate-plugin: ## Activate WP-OPcache on WordPress
-	docker run \
-		--rm \
-		--volumes-from wordpress \
-		--network container:wordpress \
-		wordpress:cli \
-			wp plugin activate \
-			flush-opcache
-
-activate-plugin-multisite: ## Activate WP-OPcache on WordPress Multisite
-	docker run \
-		--rm \
-		--volumes-from wordpress-multisite \
-		--network container:wordpress-multisite \
-		wordpress:cli \
-			wp plugin activate \
-			flush-opcache
+install: install-pip-packages composer-install ## Install everything
 
 composer-install: ## Install and setup wpcs
 	composer install
@@ -94,6 +37,4 @@ tests: ## Run all phpcs tests
 		--ignore=flush-opcache/admin/opcache.php,flush-opcache/admin/js/d3.min.js \
 		--standard=WordPress \
 		flush-opcache/
-
-pre-commit: ## Run pre-commit tests
 	pre-commit run --all-files
