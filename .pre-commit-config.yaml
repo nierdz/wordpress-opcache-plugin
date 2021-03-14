@@ -1,0 +1,27 @@
+---
+repos:
+  - repo: git://github.com/pre-commit/pre-commit-hooks
+    rev: v2.4.0
+    hooks:
+      - id: check-added-large-files
+      - id: check-case-conflict
+      - id: check-executables-have-shebangs
+      - id: check-merge-conflict
+      - id: check-symlinks
+      - id: debug-statements
+      - id: detect-private-key
+      - id: end-of-file-fixer
+      - id: requirements-txt-fixer
+      - id: trailing-whitespace
+  - repo: local
+    hooks:
+      - id: docker-shell-lint
+        name: Run shellcheck with docker
+        language: docker_image
+        entry: koalaman/shellcheck:stable
+        types: [shell]
+      - id: docker-shell-shfmt
+        name: Run shfmt with docker
+        language: docker_image
+        entry: mvdan/shfmt -w -d -i 2 -ci
+        types: [shell]

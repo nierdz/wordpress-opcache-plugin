@@ -8,7 +8,7 @@ if ( strpos( $_SERVER['REQUEST_URI'], basename( __FILE__ ) ) !== false ) {
 
 /**
  * OPcache Status
- * 
+ *
  * A one-page opcache status page for the PHP 5.5 opcode cache.
  * https://github.com/wp-cloud/opcache-status
  *
