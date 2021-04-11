@@ -1,7 +1,7 @@
 MAIN_DIR := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 VIRTUALENV_DIR := $(MAIN_DIR)/venv
 VIRTUAL_ENV_DISABLE_PROMPT = true
-PATH := $(VIRTUALENV_DIR)/bin:vendor/bin:$(PATH)
+PATH := $(VIRTUALENV_DIR)/bin:flush-opcache/vendor/bin:$(PATH)
 SHELL := /usr/bin/env bash
 
 .DEFAULT_GOAL := help
