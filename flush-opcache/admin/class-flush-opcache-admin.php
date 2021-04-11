@@ -22,7 +22,7 @@ class Flush_Opcache_Admin {
 	private $name;
 
 	/**
-	 * * Version of the plugin
+	 * Version of the plugin
 	 *
 	 * @var string
 	 */

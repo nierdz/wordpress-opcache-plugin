@@ -15,29 +15,25 @@ if ( ! defined( 'WPINC' ) ) {
 	die;
 }
 
-require_once plugin_dir_path( dirname( __FILE__ ) ) . '/vendor/autoload.php';
+require_once plugin_dir_path( dirname( __FILE__ ) ) . '/includes/class-flush-opcache-statistics.php';
 $options = array(
-	'allow_filelist'   => false,
-	'allow_invalidate' => false,
-	'allow_reset'      => false,
-	'allow_realtime'   => false,
-	'size_precision'   => 2,
-	'size_space'       => false,
+	'allow_filelist' => false,
+	'size_space'     => false,
 );
 
-$opcache_data = ( new Service( $options ) )->handle();
+$opcache_data = new Flush_Opcache_Statistics( $options );
 
 $opcache_stroke_dasharray       = pi() * 200;
-$opcache_used_memory_percentage = $opcache_data->getData( 'overview', 'used_memory_percentage' );
+$opcache_used_memory_percentage = $opcache_data->get_stats( 'overview', 'used_memory_percentage' );
 $opcache_used_memory_stroke     = $opcache_stroke_dasharray * ( 1 - $opcache_used_memory_percentage / 100 );
-$opcache_hit_rate               = round( $opcache_data->getData( 'overview', 'opcache_hit_rate' ) );
+$opcache_hit_rate               = round( $opcache_data->get_stats( 'overview', 'opcache_hit_rate' ) );
 $opcache_hit_rate_stroke        = $opcache_stroke_dasharray * ( 1 - $opcache_hit_rate / 100 );
-$opcache_num_cached_keys        = $opcache_data->getData( 'overview', 'num_cached_keys' );
-$opcache_max_cached_keys        = $opcache_data->getData( 'overview', 'max_cached_keys' );
+$opcache_num_cached_keys        = $opcache_data->get_stats( 'overview', 'num_cached_keys' );
+$opcache_max_cached_keys        = $opcache_data->get_stats( 'overview', 'max_cached_keys' );
 $opcache_used_keys_percentage   = round( ( $opcache_num_cached_keys / $opcache_max_cached_keys ) * 100 );
 $opcache_used_keys_stroke       = $opcache_stroke_dasharray * ( 1 - $opcache_used_keys_percentage / 100 );
-$opcache_data_readable          = $opcache_data->getData( 'overview', 'readable' );
-$opcache_data_directives        = $opcache_data->getData( 'directives' );
+$opcache_data_readable          = $opcache_data->get_stats( 'overview', 'readable' );
+$opcache_data_directives        = $opcache_data->get_stats( 'directives' );
 
 ?>
 
@@ -100,27 +96,27 @@ $opcache_data_directives        = $opcache_data->getData( 'directives' );
 						<tbody>
 						<tr>
 							<td><b><?php esc_attr_e( 'OPcache version', 'flush-opcache' ); ?>:</b></td>
-							<td><?php echo esc_attr( $opcache_data->getData( 'version', 'version' ) ); ?></td>
+							<td><?php echo esc_attr( $opcache_data->get_stats( 'version', 'version' ) ); ?></td>
 						</tr>
 						<tr class="alternate">
 							<td><b><?php esc_attr_e( 'PHP version', 'flush-opcache' ); ?>:</b></td>
-							<td><?php echo esc_attr( $opcache_data->getData( 'version', 'php' ) ); ?></td>
+							<td><?php echo esc_attr( $opcache_data->get_stats( 'version', 'php' ) ); ?></td>
 						</tr>
 						<tr>
 							<td><b><?php esc_attr_e( 'host', 'flush-opcache' ); ?>:</b></td>
-							<td><?php echo esc_attr( $opcache_data->getData( 'version', 'host' ) ); ?></td>
+							<td><?php echo esc_attr( $opcache_data->get_stats( 'version', 'host' ) ); ?></td>
 						</tr>
 						<tr class="alternate">
 							<td><b><?php esc_attr_e( 'server software', 'flush-opcache' ); ?>:</b></td>
-							<td><?php echo esc_attr( $opcache_data->getData( 'version', 'server' ) ); ?></td>
+							<td><?php echo esc_attr( $opcache_data->get_stats( 'version', 'server' ) ); ?></td>
 						</tr>
 						<tr>
 							<td><b><?php esc_attr_e( 'start time', 'flush-opcache' ); ?>:</b></td>
-							<td><?php echo esc_attr( date_i18n( 'Y/m/d g:i:s A', $opcache_data->getData( 'overview', 'start_time' ) ) ); ?></td>
+							<td><?php echo esc_attr( date_i18n( 'Y/m/d g:i:s A', $opcache_data->get_stats( 'overview', 'start_time' ) ) ); ?></td>
 						</tr>
 						<tr class="alternate">
 							<td><b><?php esc_attr_e( 'last reset', 'flush-opcache' ); ?>:</b></td>
-							<td><?php echo esc_attr( date_i18n( 'Y/m/d g:i:s A', $opcache_data->getData( 'overview', 'last_restart_time' ) ) ); ?></td>
+							<td><?php echo esc_attr( date_i18n( 'Y/m/d g:i:s A', $opcache_data->get_stats( 'overview', 'last_restart_time' ) ) ); ?></td>
 						</tr>
 						</tbody>
 					</table>
@@ -155,7 +151,7 @@ $opcache_data_directives        = $opcache_data->getData( 'directives' );
 						</tr>
 						<tr class="alternate">
 							<td><b><?php esc_attr_e( 'wasted memory', 'flush-opcache' ); ?>:</b></td>
-							<td><?php echo esc_attr( $opcache_data_readable['wasted_memory'] ); ?> (<?php echo esc_attr( $opcache_data->getData( 'overview', 'wasted_percentage' ) ); ?>%)</td>
+							<td><?php echo esc_attr( $opcache_data_readable['wasted_memory'] ); ?> (<?php echo esc_attr( $opcache_data->get_stats( 'overview', 'wasted_percentage' ) ); ?>%)</td>
 						</tr>
 						</tbody>
 					</table>
@@ -172,27 +168,27 @@ $opcache_data_directives        = $opcache_data->getData( 'directives' );
 						<tbody>
 						<tr>
 							<td><b><?php esc_attr_e( 'number of cached files', 'flush-opcache' ); ?>:</b></td>
-							<td><?php echo esc_attr( $opcache_data->getData( 'overview', 'num_cached_scripts' ) ); ?></td>
+							<td><?php echo esc_attr( $opcache_data->get_stats( 'overview', 'num_cached_scripts' ) ); ?></td>
 						</tr>
 						<tr class="alternate">
 							<td><b><?php esc_attr_e( 'number of hits', 'flush-opcache' ); ?>:</b></td>
-							<td><?php echo esc_attr( $opcache_data->getData( 'overview', 'hits' ) ); ?></td>
+							<td><?php echo esc_attr( $opcache_data->get_stats( 'overview', 'hits' ) ); ?></td>
 						</tr>
 						<tr>
 							<td><b><?php esc_attr_e( 'number of misses', 'flush-opcache' ); ?>:</b></td>
-							<td><?php echo esc_attr( $opcache_data->getData( 'overview', 'misses' ) ); ?></td>
+							<td><?php echo esc_attr( $opcache_data->get_stats( 'overview', 'misses' ) ); ?></td>
 						</tr>
 						<tr class="alternate">
 							<td><b><?php esc_attr_e( 'blacklist misses', 'flush-opcache' ); ?>:</b></td>
-							<td><?php echo esc_attr( $opcache_data->getData( 'overview', 'blacklist_misses' ) ); ?></td>
+							<td><?php echo esc_attr( $opcache_data->get_stats( 'overview', 'blacklist_misses' ) ); ?></td>
 						</tr>
 						<tr>
 							<td><b><?php esc_attr_e( 'number of cached keys', 'flush-opcache' ); ?>:</b></td>
-							<td><?php echo esc_attr( $opcache_data->getData( 'overview', 'num_cached_keys' ) ); ?></td>
+							<td><?php echo esc_attr( $opcache_data->get_stats( 'overview', 'num_cached_keys' ) ); ?></td>
 						</tr>
 						<tr class="alternate">
 							<td><b><?php esc_attr_e( 'max cached keys', 'flush-opcache' ); ?>:</b></td>
-							<td><?php echo esc_attr( $opcache_data->getData( 'overview', 'max_cached_keys' ) ); ?></td>
+							<td><?php echo esc_attr( $opcache_data->get_stats( 'overview', 'max_cached_keys' ) ); ?></td>
 						</tr>
 						</tbody>
 					</table>
@@ -237,7 +233,7 @@ $opcache_data_directives        = $opcache_data->getData( 'directives' );
 						<tbody>
 						<?php
 						$count = 0;
-						foreach ( $opcache_data->getData( 'functions' ) as $function ) {
+						foreach ( $opcache_data->get_stats( 'functions' ) as $function ) {
 							$count++;
 							?>
 							<tr<?php if ( 0 === $count % 2 ) { ?> class="alternate" <?php } // phpcs:ignore ?>>
