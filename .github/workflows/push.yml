@@ -10,8 +10,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-    - name: install composer packages
-      run: composer install --no-dev
     - name: push to svn
       run: bash github-to-svn.sh
       env:
