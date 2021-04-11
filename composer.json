@@ -5,5 +5,16 @@
     "require-dev": {
         "automattic/vipwpcs": "2.2",
         "dealerdirect/phpcodesniffer-composer-installer": "0.7.1"
+    },
+    "require": {
+        "amnuts/opcache-gui": "3.2"
+    },
+    "scripts": {
+        "post-install-cmd": [
+            "rm -f flush-opcache/vendor/amnuts/opcache-gui/index.php"
+        ],
+        "post-update-cmd": [
+            "rm -f flush-opcache/vendor/amnuts/opcache-gui/index.php"
+        ]
     }
 }

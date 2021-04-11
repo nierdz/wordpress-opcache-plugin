@@ -1,785 +1,298 @@
 <?php
-// Prevent this script to be called directly
-if ( strpos( $_SERVER['REQUEST_URI'], basename( __FILE__ ) ) !== false ) {
-	http_response_code( 403 );
-	die( 'Forbidden' );
-}
-
-
 /**
- * OPcache Status
+ * Generate OPcache statistics in admin area
  *
- * A one-page opcache status page for the PHP 5.5 opcode cache.
- * https://github.com/wp-cloud/opcache-status
+ * @phpcs:disable Squiz.PHP.EmbeddedPhp.ContentAfterOpen
+ * @phpcs:disable Squiz.PHP.EmbeddedPhp.ContentBeforeOpen
  *
- * @package OpCacheStatus
- * @version 0.1.0
- * @author WP-Cloud <code@wp-cloud.net>
- * @copyright Copyright (c) 2016, WP-Cloud
- * @copyright Copyright (c) -2016, Rasmus Lerdorf
- * @license @todo
+ * @package flush-opcache
  */
 
-define('THOUSAND_SEPARATOR',true);
+use Amnuts\Opcache\Service;
 
-if (!extension_loaded('Zend OPcache')) {
-    echo '<div style="background-color: #F2DEDE; color: #B94A48; padding: 1em;">You do not have the Zend OPcache extension loaded, sample data is being shown instead.</div>';
-    require 'data-sample.php';
+// If this file is called directly, abort.
+if ( ! defined( 'WPINC' ) ) {
+	die;
 }
 
-class OpCacheDataModel
-{
-    private $_configuration;
-    private $_status;
-    private $_d3Scripts = array();
+require_once plugin_dir_path( dirname( __FILE__ ) ) . '/vendor/autoload.php';
+$options = array(
+	'allow_filelist'   => false,
+	'allow_invalidate' => false,
+	'allow_reset'      => false,
+	'allow_realtime'   => false,
+	'size_precision'   => 2,
+	'size_space'       => false,
+);
 
-    public $version = '0.1.0';
+$opcache_data = ( new Service( $options ) )->handle();
 
-    public function __construct()
-    {
-        $this->_configuration = opcache_get_configuration();
-        $this->_status = opcache_get_status();
-    }
+$opcache_stroke_dasharray       = pi() * 200;
+$opcache_used_memory_percentage = $opcache_data->getData( 'overview', 'used_memory_percentage' );
+$opcache_used_memory_stroke     = $opcache_stroke_dasharray * ( 1 - $opcache_used_memory_percentage / 100 );
+$opcache_hit_rate               = round( $opcache_data->getData( 'overview', 'opcache_hit_rate' ) );
+$opcache_hit_rate_stroke        = $opcache_stroke_dasharray * ( 1 - $opcache_hit_rate / 100 );
+$opcache_num_cached_keys        = $opcache_data->getData( 'overview', 'num_cached_keys' );
+$opcache_max_cached_keys        = $opcache_data->getData( 'overview', 'max_cached_keys' );
+$opcache_used_keys_percentage   = round( ( $opcache_num_cached_keys / $opcache_max_cached_keys ) * 100 );
+$opcache_used_keys_stroke       = $opcache_stroke_dasharray * ( 1 - $opcache_used_keys_percentage / 100 );
+$opcache_data_readable          = $opcache_data->getData( 'overview', 'readable' );
+$opcache_data_directives        = $opcache_data->getData( 'directives' );
 
-    public function getPageTitle()
-    {
-        return 'PHP ' . phpversion() . " with OpCache {$this->_configuration['version']['version']}";
-    }
-
-    public function getStatusDataRows()
-    {
-        $rows = array();
-        foreach ($this->_status as $key => $value) {
-            if ($key === 'scripts') {
-                continue;
-            }
-
-            if (is_array($value)) {
-                foreach ($value as $k => $v) {
-                    if ($v === false) {
-                        $value = 'false';
-                    }
-                    if ($v === true) {
-                        $value = 'true';
-                    }
-                    if ($k === 'used_memory' || $k === 'free_memory' || $k === 'wasted_memory') {
-                        $v = $this->_size_for_humans(
-                            $v
-                        );
-                    }
-                    if ($k === 'current_wasted_percentage' || $k === 'opcache_hit_rate') {
-                        $v = number_format(
-                                $v,
-                                2
-                            ) . '%';
-                    }
-                    if ($k === 'blacklist_miss_ratio') {
-                        $v = number_format($v, 2) . '%';
-                    }
-                    if ($k === 'start_time' || $k === 'last_restart_time') {
-                        $v = ($v ? date(DATE_RFC822, $v) : 'never');
-                    }
-                    if (THOUSAND_SEPARATOR === true && is_int($v)) {
-                        $v = number_format($v);
-                    }
-
-                    $rows[] = "<tr><th>$k</th><td>$v</td></tr>\n";
-                }
-                continue;
-            }
-            if ($value === false) {
-                $value = 'false';
-            }
-            if ($value === true) {
-                $value = 'true';
-            }
-            $rows[] = "<tr><th>$key</th><td>$value</td></tr>\n";
-        }
-
-        return implode("\n", $rows);
-    }
-
-    public function getConfigDataRows()
-    {
-        $rows = array();
-        foreach ($this->_configuration['directives'] as $key => $value) {
-            if ($value === false) {
-                $value = 'false';
-            }
-            if ($value === true) {
-                $value = 'true';
-            }
-            if ($key == 'opcache.memory_consumption') {
-                $value = $this->_size_for_humans($value);
-            }
-            $rows[] = "<tr><th>$key</th><td>$value</td></tr>\n";
-        }
-
-        return implode("\n", $rows);
-    }
-
-    public function getScriptStatusRows()
-    {
-        $dirs = array();
-        foreach ($this->_status['scripts'] as $key => $data) {
-            $dirs[dirname($key)][basename($key)] = $data;
-            $this->_arrayPset($this->_d3Scripts, $key, array(
-                'name' => basename($key),
-                'size' => $data['memory_consumption'],
-            ));
-        }
-
-        asort($dirs);
-
-        $basename = '';
-        while (true) {
-            if (count($this->_d3Scripts) !=1) break;
-            $basename .= DIRECTORY_SEPARATOR . key($this->_d3Scripts);
-            $this->_d3Scripts = reset($this->_d3Scripts);
-        }
-
-        $this->_d3Scripts = $this->_processPartition($this->_d3Scripts, $basename);
-        $id = 1;
-
-        $rows = array();
-        foreach ($dirs as $dir => $files) {
-            $count = count($files);
-            $file_plural = $count > 1 ? 's' : null;
-            $m = 0;
-            foreach ($files as $file => $data) {
-                $m += $data["memory_consumption"];
-            }
-            $m = $this->_size_for_humans($m);
-
-            if ($count > 1) {
-                $rows[] = '<tr>';
-                $rows[] = "<th class=\"clickable\" id=\"head-{$id}\" colspan=\"3\" onclick=\"toggleVisible('#head-{$id}', '#row-{$id}')\">{$dir} ({$count} file{$file_plural}, {$m})</th>";
-                $rows[] = '</tr>';
-            }
-
-            foreach ($files as $file => $data) {
-                $rows[] = "<tr id=\"row-{$id}\">";
-                $rows[] = "<td>" . $this->_format_value($data["hits"]) . "</td>";
-                $rows[] = "<td>" . $this->_size_for_humans($data["memory_consumption"]) . "</td>";
-                $rows[] = $count > 1 ? "<td>{$file}</td>" : "<td>{$dir}/{$file}</td>";
-                $rows[] = '</tr>';
-            }
-
-            ++$id;
-        }
-
-        return implode("\n", $rows);
-    }
-
-    public function getScriptStatusCount()
-    {
-        return count($this->_status["scripts"]);
-    }
-
-    public function getGraphDataSetJson()
-    {
-        $dataset = array();
-        $dataset['memory'] = array(
-            $this->_status['memory_usage']['used_memory'],
-            $this->_status['memory_usage']['free_memory'],
-            $this->_status['memory_usage']['wasted_memory'],
-        );
-
-        $dataset['keys'] = array(
-            $this->_status['opcache_statistics']['num_cached_keys'],
-            $this->_status['opcache_statistics']['max_cached_keys'] - $this->_status['opcache_statistics']['num_cached_keys'],
-            0
-        );
-
-        $dataset['hits'] = array(
-            $this->_status['opcache_statistics']['misses'],
-            $this->_status['opcache_statistics']['hits'],
-            0,
-        );
-
-        $dataset['restarts'] = array(
-            $this->_status['opcache_statistics']['oom_restarts'],
-            $this->_status['opcache_statistics']['manual_restarts'],
-            $this->_status['opcache_statistics']['hash_restarts'],
-        );
-
-        if (THOUSAND_SEPARATOR === true) {
-            $dataset['TSEP'] = 1;
-        } else {
-            $dataset['TSEP'] = 0;
-        }
-
-        return json_encode($dataset);
-    }
-
-    public function getHumanUsedMemory()
-    {
-        return $this->_size_for_humans($this->getUsedMemory());
-    }
-
-    public function getHumanFreeMemory()
-    {
-        return $this->_size_for_humans($this->getFreeMemory());
-    }
-
-    public function getHumanWastedMemory()
-    {
-        return $this->_size_for_humans($this->getWastedMemory());
-    }
-
-    public function getUsedMemory()
-    {
-        return $this->_status['memory_usage']['used_memory'];
-    }
-
-    public function getFreeMemory()
-    {
-        return $this->_status['memory_usage']['free_memory'];
-    }
-
-    public function getWastedMemory()
-    {
-        return $this->_status['memory_usage']['wasted_memory'];
-    }
-
-    public function getWastedMemoryPercentage()
-    {
-        return number_format($this->_status['memory_usage']['current_wasted_percentage'], 2);
-    }
-
-    public function getD3Scripts()
-    {
-        return $this->_d3Scripts;
-    }
-
-    private function _processPartition($value, $name = null)
-    {
-        if (array_key_exists('size', $value)) {
-            return $value;
-        }
-
-        $array = array('name' => $name,'children' => array());
-
-        foreach ($value as $k => $v) {
-            $array['children'][] = $this->_processPartition($v, $k);
-        }
-
-        return $array;
-    }
-
-    private function _format_value($value)
-    {
-        if (THOUSAND_SEPARATOR === true) {
-            return number_format($value);
-        } else {
-            return $value;
-        }
-    }
-
-    private function _size_for_humans($bytes)
-    {
-        if ($bytes > 1048576) {
-            return sprintf('%.2f&nbsp;MB', $bytes / 1048576);
-        } else {
-            if ($bytes > 1024) {
-                return sprintf('%.2f&nbsp;kB', $bytes / 1024);
-            } else {
-                return sprintf('%d&nbsp;bytes', $bytes);
-            }
-        }
-    }
-
-    // Borrowed from Laravel
-    private function _arrayPset(&$array, $key, $value)
-    {
-        if (is_null($key)) return $array = $value;
-        $keys = explode(DIRECTORY_SEPARATOR, ltrim($key, DIRECTORY_SEPARATOR));
-        while (count($keys) > 1) {
-            $key = array_shift($keys);
-            if ( ! isset($array[$key]) || ! is_array($array[$key])) {
-                $array[$key] = array();
-            }
-            $array =& $array[$key];
-        }
-        $array[array_shift($keys)] = $value;
-        return $array;
-    }
-
-    public function clearCache() {
-        opcache_reset();
-    }
-
-}
-
-$dataModel = new OpCacheDataModel();
-
-if (isset($_GET['clear']) && $_GET['clear'] == 1) {
-    $dataModel->clearCache();
-    header('Location: ' . $_SERVER['PHP_SELF']);
-}
 ?>
-<!DOCTYPE html>
-<meta charset="utf-8">
-<html>
-<head>
-    <style>
-        body {
-            font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
-            margin: 0;
-            padding: 0;
-        }
-
-        #container {
-            width: 1024px;
-            margin: auto;
-            position: relative;
-        }
-
-        h1 {
-            padding: 10px 0;
-        }
-
-        table {
-            border-collapse: collapse;
-        }
-
-        tbody tr:nth-child(even) {
-            background-color: #eee;
-        }
-
-        p.capitalize {
-            text-transform: capitalize;
-        }
-
-        .tabs {
-            position: relative;
-            float: left;
-            width: 60%;
-        }
-
-        .tab {
-            float: left;
-        }
-
-        .tab label {
-            background: #eee;
-            padding: 10px 12px;
-            border: 1px solid #ccc;
-            margin-left: -1px;
-            position: relative;
-            left: 1px;
-        }
-
-        .tab [type=radio] {
-            display: none;
-        }
-
-        .tab th, .tab td {
-            padding: 8px 12px;
-        }
-
-        .content {
-            position: absolute;
-            top: 28px;
-            left: 0;
-            background: white;
-            border: 1px solid #ccc;
-            height: 450px;
-            width: 100%;
-            overflow: auto;
-        }
-
-        .content table {
-            width: 100%;
-        }
-
-        .content th, .tab:nth-child(3) td {
-            text-align: left;
-        }
-
-        .content td {
-            text-align: right;
-        }
-
-        .clickable {
-            cursor: pointer;
-        }
-
-        [type=radio]:checked ~ label {
-            background: white;
-            border-bottom: 1px solid white;
-            z-index: 2;
-        }
-
-        [type=radio]:checked ~ label ~ .content {
-            z-index: 1;
-        }
-
-        #graph {
-            float: right;
-            width: 40%;
-            position: relative;
-        }
-
-        #graph > form {
-            position: absolute;
-            right: 60px;
-            top: -20px;
-        }
-
-        #graph > svg {
-            position: absolute;
-            top: 0;
-            right: 0;
-        }
-
-        #stats {
-            position: absolute;
-            right: 125px;
-            top: 145px;
-        }
-
-        #stats th, #stats td {
-            padding: 6px 10px;
-            font-size: 0.8em;
-        }
-
-        #partition {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            z-index: 10;
-            top: 0;
-            left: 0;
-            background: #ddd;
-            display: none;
-        }
-
-        #close-partition {
-            display: none;
-            position: absolute;
-            z-index: 20;
-            right: 15px;
-            top: 15px;
-            background: #f9373d;
-            color: #fff;
-            padding: 12px 15px;
-        }
-
-        #close-partition:hover {
-            background: #D32F33;
-            cursor: pointer;
-        }
-
-        #partition rect {
-            stroke: #fff;
-            fill: #aaa;
-            fill-opacity: 1;
-        }
-
-        #partition rect.parent {
-            cursor: pointer;
-            fill: steelblue;
-        }
-
-        #partition text {
-            pointer-events: none;
-        }
-
-        label {
-            cursor: pointer;
-        }
-
-        .actions {
-            margin: 20px 0;
-            padding: 10px;
-            border: 1px solid #cacaca;
-        }
-    </style>
-	<script>
-		var $ = jQuery.noConflict();
-	</script>
-    <script>
-        var hidden = {};
-        function toggleVisible(head, row) {
-            if (!hidden[row]) {
-                d3.selectAll(row).transition().style('display', 'none');
-                hidden[row] = true;
-                d3.select(head).transition().style('color', '#ccc');
-            } else {
-                d3.selectAll(row).transition().style('display');
-                hidden[row] = false;
-                d3.select(head).transition().style('color', '#000');
-            }
-        }
-    </script>
-    <title><?php echo $dataModel->getPageTitle(); ?></title>
-</head>
-
-<body>
-    <div id="container">
-        <span style="float:right;font-size:small;">OPcache Status v<?php echo $dataModel->version; ?></span>
-        <h1><?php echo $dataModel->getPageTitle(); ?></h1>
-
-        <div class="tabs">
-
-            <div class="tab">
-                <input type="radio" id="tab-status" name="tab-group-1" checked>
-                <label for="tab-status">Status</label>
-                <div class="content">
-                    <table>
-                        <?php echo $dataModel->getStatusDataRows(); ?>
-                    </table>
-                </div>
-            </div>
-
-            <div class="tab">
-                <input type="radio" id="tab-config" name="tab-group-1">
-                <label for="tab-config">Configuration</label>
-                <div class="content">
-                    <table>
-                        <?php echo $dataModel->getConfigDataRows(); ?>
-                    </table>
-                </div>
-            </div>
-
-            <div class="tab">
-                <input type="radio" id="tab-scripts" name="tab-group-1">
-                <label for="tab-scripts">Scripts (<?php echo $dataModel->getScriptStatusCount(); ?>)</label>
-                <div class="content">
-                    <table style="font-size:0.8em;">
-                        <tr>
-                            <th width="10%">Hits</th>
-                            <th width="20%">Memory</th>
-                            <th width="70%">Path</th>
-                        </tr>
-                        <?php echo $dataModel->getScriptStatusRows(); ?>
-                    </table>
-                </div>
-            </div>
-
-            <div class="tab">
-                <input type="radio" id="tab-visualise" name="tab-group-1">
-                <label for="tab-visualise">Visualise Partition</label>
-                <div class="content"></div>
-            </div>
-
-        </div>
-
-        <div id="graph">
-            <form>
-                <label><input type="radio" name="dataset" value="memory" checked> Memory</label>
-                <label><input type="radio" name="dataset" value="keys"> Keys</label>
-                <label><input type="radio" name="dataset" value="hits"> Hits</label>
-                <label><input type="radio" name="dataset" value="restarts"> Restarts</label>
-            </form>
-
-            <div id="stats"></div>
-        </div>
-    </div>
-
-    <div id="close-partition">&#10006; Close Visualisation</div>
-    <div id="partition"></div>
-
-    <script>
-        var dataset = <?php echo $dataModel->getGraphDataSetJson(); ?>;
-
-        var width = 400,
-            height = 400,
-            radius = Math.min(width, height) / 2,
-            colours = ['#B41F1F', '#1FB437', '#ff7f0e'];
-
-        d3.scale.customColours = function() {
-            return d3.scale.ordinal().range(colours);
-        };
-
-        var colour = d3.scale.customColours();
-        var pie = d3.layout.pie().sort(null);
-
-        var arc = d3.svg.arc().innerRadius(radius - 20).outerRadius(radius - 50);
-        var svg = d3.select("#graph").append("svg")
-                    .attr("width", width)
-                    .attr("height", height)
-                    .append("g")
-                    .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
-
-        var path = svg.selectAll("path")
-                      .data(pie(dataset.memory))
-                      .enter().append("path")
-                      .attr("fill", function(d, i) { return colour(i); })
-                      .attr("d", arc)
-                      .each(function(d) { this._current = d; }); // store the initial values
-
-        d3.selectAll("input").on("change", change);
-        set_text("memory");
-
-        function set_text(t) {
-            if (t === "memory") {
-                d3.select("#stats").html(
-                    "<table><tr><th style='background:#B41F1F;'>Used</th><td><?php echo $dataModel->getHumanUsedMemory()?></td></tr>"+
-                    "<tr><th style='background:#1FB437;'>Free</th><td><?php echo $dataModel->getHumanFreeMemory()?></td></tr>"+
-                    "<tr><th style='background:#ff7f0e;' rowspan=\"2\">Wasted</th><td><?php echo $dataModel->getHumanWastedMemory()?></td></tr>"+
-                    "<tr><td><?php echo $dataModel->getWastedMemoryPercentage()?>%</td></tr></table>"
-                );
-            } else if (t === "keys") {
-                d3.select("#stats").html(
-                    "<table><tr><th style='background:#B41F1F;'>Cached keys</th><td>"+format_value(dataset[t][0])+"</td></tr>"+
-                    "<tr><th style='background:#1FB437;'>Free Keys</th><td>"+format_value(dataset[t][1])+"</td></tr></table>"
-                );
-            } else if (t === "hits") {
-                d3.select("#stats").html(
-                    "<table><tr><th style='background:#B41F1F;'>Misses</th><td>"+format_value(dataset[t][0])+"</td></tr>"+
-                    "<tr><th style='background:#1FB437;'>Cache Hits</th><td>"+format_value(dataset[t][1])+"</td></tr></table>"
-                );
-            } else if (t === "restarts") {
-                d3.select("#stats").html(
-                    "<table><tr><th style='background:#B41F1F;'>Memory</th><td>"+dataset[t][0]+"</td></tr>"+
-                    "<tr><th style='background:#1FB437;'>Manual</th><td>"+dataset[t][1]+"</td></tr>"+
-                    "<tr><th style='background:#ff7f0e;'>Keys</th><td>"+dataset[t][2]+"</td></tr></table>"
-                );
-            }
-        }
-
-        function change() {
-            // Skip if the value is undefined for some reason
-            if (typeof dataset[this.value] !== 'undefined') {
-                // Filter out any zero values to see if there is anything left
-                var remove_zero_values = dataset[this.value].filter(function(value) {
-                    return value > 0;
-                });
-                if (remove_zero_values.length > 0) {
-                    $('#graph').find('> svg').show();
-                    path = path.data(pie(dataset[this.value])); // update the data
-                    path.transition().duration(750).attrTween("d", arcTween); // redraw the arcs
-                // Hide the graph if we can't draw it correctly, not ideal but this works
-                } else {
-                    $('#graph').find('> svg').hide();
-                }
-
-                set_text(this.value);
-            }
-        }
-
-        function arcTween(a) {
-            var i = d3.interpolate(this._current, a);
-            this._current = i(0);
-            return function(t) {
-                return arc(i(t));
-            };
-        }
-
-        function size_for_humans(bytes) {
-            if (bytes > 1048576) {
-                return (bytes/1048576).toFixed(2) + ' MB';
-            } else if (bytes > 1024) {
-                return (bytes/1024).toFixed(2) + ' KB';
-            } else return bytes + ' bytes';
-        }
-
-        function format_value(value) {
-            if (dataset["TSEP"] == 1) {
-                return value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-            } else {
-                return value;
-            }
-        }
-
-        var w = window.innerWidth,
-            h = window.innerHeight,
-            x = d3.scale.linear().range([0, w]),
-            y = d3.scale.linear().range([0, h]);
-
-        var vis = d3.select("#partition")
-                    .style("width", w + "px")
-                    .style("height", h + "px")
-                    .append("svg:svg")
-                    .attr("width", w)
-                    .attr("height", h);
-
-        var partition = d3.layout.partition()
-                .value(function(d) { return d.size; });
-
-        root = JSON.parse('<?php echo json_encode($dataModel->getD3Scripts()); ?>');
-
-        var g = vis.selectAll("g")
-                   .data(partition.nodes(root))
-                   .enter().append("svg:g")
-                   .attr("transform", function(d) { return "translate(" + x(d.y) + "," + y(d.x) + ")"; })
-                   .on("click", click);
-
-        var kx = w / root.dx,
-                ky = h / 1;
-
-        g.append("svg:rect")
-         .attr("width", root.dy * kx)
-         .attr("height", function(d) { return d.dx * ky; })
-         .attr("class", function(d) { return d.children ? "parent" : "child"; });
-
-        g.append("svg:text")
-         .attr("transform", transform)
-         .attr("dy", ".35em")
-         .style("opacity", function(d) { return d.dx * ky > 12 ? 1 : 0; })
-         .text(function(d) { return d.name; })
-
-        d3.select(window)
-          .on("click", function() { click(root); })
-
-        function click(d) {
-            if (!d.children) return;
-
-            kx = (d.y ? w - 40 : w) / (1 - d.y);
-            ky = h / d.dx;
-            x.domain([d.y, 1]).range([d.y ? 40 : 0, w]);
-            y.domain([d.x, d.x + d.dx]);
-
-            var t = g.transition()
-                     .duration(d3.event.altKey ? 7500 : 750)
-                     .attr("transform", function(d) { return "translate(" + x(d.y) + "," + y(d.x) + ")"; });
-
-            t.select("rect")
-             .attr("width", d.dy * kx)
-             .attr("height", function(d) { return d.dx * ky; });
-
-            t.select("text")
-             .attr("transform", transform)
-             .style("opacity", function(d) { return d.dx * ky > 12 ? 1 : 0; });
-
-            d3.event.stopPropagation();
-        }
-
-        function transform(d) {
-            return "translate(8," + d.dx * ky / 2 + ")";
-        }
-
-        $(document).ready(function() {
-
-            function handleVisualisationToggle(close) {
-
-                $('#partition, #close-partition').fadeToggle();
-
-                // Is the visualisation being closed? If so show the status tab again
-                if (close) {
-
-                    $('#tab-visualise').removeAttr('checked');
-                    $('#tab-status').trigger('click');
-
-                }
-
-            }
-
-            $('label[for="tab-visualise"], #close-partition').on('click', function() {
-
-                handleVisualisationToggle(($(this).attr('id') === 'close-partition'));
-
-            });
-
-            $(document).keyup(function(e) {
-
-                if (e.keyCode == 27) handleVisualisationToggle(true);
-
-            });
-
-        });
-    </script>
-</body>
-</html>
+
+<div class="wrap">
+	<div id="poststuff">
+		<div id="post-body" class="metabox-holder">
+
+			<h1><?php esc_attr_e( 'OPcache statistics', 'flush-opcache' ); ?></h1>
+
+			<div id="postbox-container-1" class="postbox-container">
+				<div class="meta-box-sortables flush-opcache-widget-container">
+
+					<div class="postbox flush-opcache-postbox">
+						<h2 class="flush-opcache-widget-title"><span><?php esc_attr_e( 'Memory', 'flush-opcache' ); ?></span></h2>
+						<div class="inside">
+							<figure class="flush-opcache-widget">
+								<svg width="260" height="260" viewBox="0 0 260 260" style="transform: rotate(-90deg);">
+									<circle cx="130" cy="130" r="100" fill="none" stroke="#A0A5AA" stroke-width="30"></circle>
+									<circle cx="130" cy="130" r="100" fill="none" stroke="#00A0D2" stroke-width="30" stroke-dasharray="<?php echo esc_attr( $opcache_stroke_dasharray ); ?>" stroke-dashoffset="<?php echo esc_attr( $opcache_used_memory_stroke ); ?>"></circle>
+								</svg>
+							<figcaption class="flush-opcache-widget-value"><?php echo esc_attr( $opcache_used_memory_percentage ); ?>%</figcaption>
+							</figure>
+						</div>
+					</div>
+
+					<div class="postbox flush-opcache-postbox">
+						<h2 class="flush-opcache-widget-title"><span><?php esc_attr_e( 'Hit rate', 'flush-opcache' ); ?></span></h2>
+						<div class="inside">
+							<figure class="flush-opcache-widget">
+								<svg width="260" height="260" viewBox="0 0 260 260" style="transform: rotate(-90deg);">
+									<circle cx="130" cy="130" r="100" fill="none" stroke="#A0A5AA" stroke-width="30"></circle>
+									<circle cx="130" cy="130" r="100" fill="none" stroke="#00A0D2" stroke-width="30" stroke-dasharray="<?php echo esc_attr( $opcache_stroke_dasharray ); ?>" stroke-dashoffset="<?php echo esc_attr( $opcache_hit_rate_stroke ); ?>"></circle>
+								</svg>
+							<figcaption class="flush-opcache-widget-value"><?php echo esc_attr( $opcache_hit_rate ); ?>%</figcaption>
+							</figure>
+						</div>
+					</div>
+
+					<div class="postbox flush-opcache-postbox">
+						<h2 class="flush-opcache-widget-title"><span><?php esc_attr_e( 'Keys', 'flush-opcache' ); ?></span></h2>
+						<div class="inside">
+							<figure class="flush-opcache-widget">
+								<svg width="260" height="260" viewBox="0 0 260 260" style="transform: rotate(-90deg);">
+									<circle cx="130" cy="130" r="100" fill="none" stroke="#A0A5AA" stroke-width="30"></circle>
+									<circle cx="130" cy="130" r="100" fill="none" stroke="#00A0D2" stroke-width="30" stroke-dasharray="<?php echo esc_attr( $opcache_stroke_dasharray ); ?>" stroke-dashoffset="<?php echo esc_attr( $opcache_used_keys_stroke ); ?>"></circle>
+								</svg>
+							<figcaption class="flush-opcache-widget-value"><?php echo esc_attr( round( $opcache_used_keys_percentage ) ); ?>%</figcaption>
+							</figure>
+						</div>
+					</div>
+
+					<div class="postbox flush-opcache-postbox">
+					<table class="widefat">
+						<thead>
+						<tr>
+							<th class="flush-opcache-widget-title"><b><?php esc_attr_e( 'General info', 'flush-opcache' ); ?></b></th>
+							<th class="flush-opcache-widget-title"></th>
+						</tr>
+						</thead>
+						<tbody>
+						<tr>
+							<td><b><?php esc_attr_e( 'OPcache version', 'flush-opcache' ); ?>:</b></td>
+							<td><?php echo esc_attr( $opcache_data->getData( 'version', 'version' ) ); ?></td>
+						</tr>
+						<tr class="alternate">
+							<td><b><?php esc_attr_e( 'PHP version', 'flush-opcache' ); ?>:</b></td>
+							<td><?php echo esc_attr( $opcache_data->getData( 'version', 'php' ) ); ?></td>
+						</tr>
+						<tr>
+							<td><b><?php esc_attr_e( 'host', 'flush-opcache' ); ?>:</b></td>
+							<td><?php echo esc_attr( $opcache_data->getData( 'version', 'host' ) ); ?></td>
+						</tr>
+						<tr class="alternate">
+							<td><b><?php esc_attr_e( 'server software', 'flush-opcache' ); ?>:</b></td>
+							<td><?php echo esc_attr( $opcache_data->getData( 'version', 'server' ) ); ?></td>
+						</tr>
+						<tr>
+							<td><b><?php esc_attr_e( 'start time', 'flush-opcache' ); ?>:</b></td>
+							<td><?php echo esc_attr( date_i18n( 'Y/m/d g:i:s A', $opcache_data->getData( 'overview', 'start_time' ) ) ); ?></td>
+						</tr>
+						<tr class="alternate">
+							<td><b><?php esc_attr_e( 'last reset', 'flush-opcache' ); ?>:</b></td>
+							<td><?php echo esc_attr( date_i18n( 'Y/m/d g:i:s A', $opcache_data->getData( 'overview', 'last_restart_time' ) ) ); ?></td>
+						</tr>
+						</tbody>
+					</table>
+					</div>
+
+				</div>
+			</div>
+
+			<div id="postbox-container-2" class="postbox-container">
+				<div class="meta-box-sortables flush-opcache-widget-container">
+
+					<div class="postbox flush-opcache-postbox">
+					<table class="widefat">
+						<thead>
+						<tr>
+							<th class="flush-opcache-widget-title"><b><?php esc_attr_e( 'Memory usage', 'flush-opcache' ); ?></b></th>
+							<th class="flush-opcache-widget-title"></th>
+						</tr>
+						</thead>
+						<tbody>
+						<tr>
+							<td><b><?php esc_attr_e( 'total memory', 'flush-opcache' ); ?>:</b></td>
+							<td><?php echo esc_attr( $opcache_data_readable['total_memory'] ); ?></td>
+						</tr>
+						<tr class="alternate">
+							<td><b><?php esc_attr_e( 'used memory', 'flush-opcache' ); ?>:</b></td>
+							<td><?php echo esc_attr( $opcache_data_readable['used_memory'] ); ?></td>
+						</tr>
+						<tr>
+							<td><b><?php esc_attr_e( 'free memory', 'flush-opcache' ); ?>:</b></td>
+							<td><?php echo esc_attr( $opcache_data_readable['free_memory'] ); ?></td>
+						</tr>
+						<tr class="alternate">
+							<td><b><?php esc_attr_e( 'wasted memory', 'flush-opcache' ); ?>:</b></td>
+							<td><?php echo esc_attr( $opcache_data_readable['wasted_memory'] ); ?> (<?php echo esc_attr( $opcache_data->getData( 'overview', 'wasted_percentage' ) ); ?>%)</td>
+						</tr>
+						</tbody>
+					</table>
+					</div>
+
+					<div class="postbox flush-opcache-postbox">
+					<table class="widefat">
+						<thead>
+						<tr>
+							<th class="flush-opcache-widget-title"><b><?php esc_attr_e( 'OPcache statistics', 'flush-opcache' ); ?></b></th>
+							<th class="flush-opcache-widget-title"></th>
+						</tr>
+						</thead>
+						<tbody>
+						<tr>
+							<td><b><?php esc_attr_e( 'number of cached files', 'flush-opcache' ); ?>:</b></td>
+							<td><?php echo esc_attr( $opcache_data->getData( 'overview', 'num_cached_scripts' ) ); ?></td>
+						</tr>
+						<tr class="alternate">
+							<td><b><?php esc_attr_e( 'number of hits', 'flush-opcache' ); ?>:</b></td>
+							<td><?php echo esc_attr( $opcache_data->getData( 'overview', 'hits' ) ); ?></td>
+						</tr>
+						<tr>
+							<td><b><?php esc_attr_e( 'number of misses', 'flush-opcache' ); ?>:</b></td>
+							<td><?php echo esc_attr( $opcache_data->getData( 'overview', 'misses' ) ); ?></td>
+						</tr>
+						<tr class="alternate">
+							<td><b><?php esc_attr_e( 'blacklist misses', 'flush-opcache' ); ?>:</b></td>
+							<td><?php echo esc_attr( $opcache_data->getData( 'overview', 'blacklist_misses' ) ); ?></td>
+						</tr>
+						<tr>
+							<td><b><?php esc_attr_e( 'number of cached keys', 'flush-opcache' ); ?>:</b></td>
+							<td><?php echo esc_attr( $opcache_data->getData( 'overview', 'num_cached_keys' ) ); ?></td>
+						</tr>
+						<tr class="alternate">
+							<td><b><?php esc_attr_e( 'max cached keys', 'flush-opcache' ); ?>:</b></td>
+							<td><?php echo esc_attr( $opcache_data->getData( 'overview', 'max_cached_keys' ) ); ?></td>
+						</tr>
+						</tbody>
+					</table>
+					</div>
+
+					<div class="postbox flush-opcache-postbox">
+					<table class="widefat">
+						<thead>
+						<tr>
+							<th class="flush-opcache-widget-title"><b><?php esc_attr_e( 'Interned strings usage', 'flush-opcache' ); ?></b></th>
+							<th class="flush-opcache-widget-title"></th>
+						</tr>
+						</thead>
+						<tbody>
+						<tr>
+							<td><b><?php esc_attr_e( 'buffer size', 'flush-opcache' ); ?>:</b></td>
+							<td><?php echo esc_attr( $opcache_data_readable['interned']['buffer_size'] ); ?></td>
+						</tr>
+						<tr class="alternate">
+							<td><b><?php esc_attr_e( 'used memory', 'flush-opcache' ); ?>:</b></td>
+							<td><?php echo esc_attr( $opcache_data_readable['interned']['strings_used_memory'] ); ?></td>
+						</tr>
+						<tr>
+							<td><b><?php esc_attr_e( 'free memory', 'flush-opcache' ); ?>:</b></td>
+							<td><?php echo esc_attr( $opcache_data_readable['interned']['strings_free_memory'] ); ?></td>
+						</tr>
+						<tr class="alternate">
+							<td><b><?php esc_attr_e( 'number of strings', 'flush-opcache' ); ?>:</b></td>
+							<td><?php echo esc_attr( $opcache_data_readable['interned']['number_of_strings'] ); ?></td>
+						</tbody>
+					</table>
+					</div>
+
+					<div class="postbox flush-opcache-postbox">
+					<table class="widefat">
+						<thead>
+						<tr>
+							<th class="flush-opcache-widget-title"><b><?php esc_attr_e( 'Available functions', 'flush-opcache' ); ?></b></th>
+							<th class="flush-opcache-widget-title"></th>
+						</tr>
+						</thead>
+						<tbody>
+						<?php
+						$count = 0;
+						foreach ( $opcache_data->getData( 'functions' ) as $function ) {
+							$count++;
+							?>
+							<tr<?php if ( 0 === $count % 2 ) { ?> class="alternate" <?php } // phpcs:ignore ?>>
+							<td><a href="https://www.php.net/<?php echo esc_attr( $function ); // phpcs:ignore ?>" target="_blank"><?php echo $function; ?></a></td>
+							<td></td>
+						</tr>
+						<?php } ?>
+						</tbody>
+					</table>
+					</div>
+
+				</div>
+			</div>
+
+			<div id="postbox-container-3" class="postbox-container">
+				<div class="meta-box-sortables flush-opcache-widget-container">
+
+					<table class="widefat">
+						<thead>
+						<tr>
+							<th class="flush-opcache-widget-title"><b><?php esc_attr_e( 'Directives', 'flush-opcache' ); ?></b></th>
+							<th class="flush-opcache-widget-title"></th>
+						</tr>
+						</thead>
+						<tbody>
+						<?php
+						$count = 0;
+						foreach ( $opcache_data_directives as $directive ) {
+							$count++;
+							if ( is_array( $directive['v'] ) ) {
+								$directive_value = '<ul>';
+								foreach ( $directive['v'] as $item ) {
+									$directive_value .= '<li>' . $item . '</li>';
+								}
+								$directive_value .= '</ul>';
+							} elseif ( '' === $directive['v'] ) {
+								$directive_value = __( 'not defined', 'flush-opcache' );
+							} elseif ( is_bool( $directive['v'] ) ) {
+								$directive_value = var_export( $directive['v'], true ); // phpcs:ignore
+							} else {
+								$directive_value = $directive['v'];
+							}
+							?>
+							<tr<?php if ( 0 === $count % 2 ) { ?> class="alternate" <?php } // phpcs:ignore ?>>
+							<td><a href="https://www.php.net/manual/en/opcache.configuration.php#ini.<?php echo esc_attr( str_replace( '_', '-', $directive['k'] ) ); // phpcs:ignore ?>" target="_blank"><?php echo $directive['k']; ?></a></td>
+							<td><?php echo $directive_value; // phpcs:ignore ?></td>
+						</tr>
+						<?php } ?>
+						</tbody>
+					</table>
+
+				</div>
+			</div>
+
+		</div>
+		<br class="clear">
+	</div>
+</div>

@@ -42,15 +42,15 @@ class Flush_Opcache_Admin {
 	}
 
 	/**
-	 * Enqueue d3js in admin area
+	 * Enqueue style.css when in stats admin area
 	 */
-	public function enqueue_script() {
-		wp_enqueue_script(
-			'd3js',
-			plugin_dir_url( __FILE__ ) . 'js/d3.min.js',
+	public function enqueue_styles() {
+		wp_enqueue_style(
+			'flush-opcache',
+			plugin_dir_url( __FILE__ ) . 'css/style.css',
 			array(),
-			'3.5.17',
-			false
+			$this->version,
+			'all'
 		);
 	}
 
