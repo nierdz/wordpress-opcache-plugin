@@ -8,21 +8,13 @@
  * @package flush-opcache
  */
 
-use Amnuts\Opcache\Service;
-
 // If this file is called directly, abort.
 if ( ! defined( 'WPINC' ) ) {
 	die;
 }
 
 require_once plugin_dir_path( dirname( __FILE__ ) ) . '/includes/class-flush-opcache-statistics.php';
-$options = array(
-	'allow_filelist' => false,
-	'size_space'     => false,
-);
-
-$opcache_data = new Flush_Opcache_Statistics( $options );
-
+$opcache_data                   = new Flush_Opcache_Statistics();
 $opcache_stroke_dasharray       = pi() * 200;
 $opcache_used_memory_percentage = $opcache_data->get_stats( 'overview', 'used_memory_percentage' );
 $opcache_used_memory_stroke     = $opcache_stroke_dasharray * ( 1 - $opcache_used_memory_percentage / 100 );

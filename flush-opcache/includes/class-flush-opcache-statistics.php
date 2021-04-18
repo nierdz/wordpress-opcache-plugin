@@ -23,13 +23,6 @@ class Flush_Opcache_Statistics {
 	protected $data;
 
 	/**
-	 * Array of options
-	 *
-	 * @var array
-	 */
-	protected $options;
-
-	/**
 	 * Array containing OPcache optimization levels
 	 *
 	 * @var array
@@ -37,22 +30,9 @@ class Flush_Opcache_Statistics {
 	protected $optimization_levels;
 
 	/**
-	 * Array containing default options
-	 *
-	 * @var array
-	 */
-	protected $defaults = array(
-		'allow_filelist' => true,
-		'size_precision' => 2,
-		'size_space'     => false,
-	);
-
-	/**
 	 * Class constructor
-	 *
-	 * @param array $options to use to get statistics.
 	 */
-	public function __construct( array $options = array() ) {
+	public function __construct() {
 		$this->optimization_levels = array(
 			1 << 0  => 'CSE, STRING construction',
 			1 << 1  => 'Constant conversion and jumps',
@@ -72,8 +52,7 @@ class Flush_Opcache_Statistics {
 			1 << 15 => 'Inline functions',
 		);
 
-		$this->options = array_merge( $this->defaults, $options );
-		$this->data    = $this->merge_stats();
+		$this->data = $this->merge_stats();
 	}
 
 	/**
@@ -85,37 +64,16 @@ class Flush_Opcache_Statistics {
 	 */
 	public function get_stats( ?string $section = null, ?string $property = null ) {
 		if ( null === $section ) {
-				return $this->data;
+			return $this->data;
 		}
 			$section = strtolower( $section );
 		if ( isset( $this->data[ $section ] ) ) {
 			if ( null === $property || ! isset( $this->data[ $section ][ $property ] ) ) {
-					return $this->data[ $section ];
+				return $this->data[ $section ];
 			}
-				return $this->data[ $section ][ $property ];
+			return $this->data[ $section ][ $property ];
 		}
-			return null;
-	}
-
-	/**
-	 * Transform bytes to human readable value
-	 *
-	 * @param  mixed $size to transform in bytes.
-	 * @return string
-	 */
-	protected function size( $size ): string {
-			$i   = 0;
-			$val = array( 'b', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB' );
-		while ( ( $size / 1024 ) > 1 ) {
-				$size /= 1024;
-				++$i;
-		}
-			return sprintf(
-				'%.' . $this->options['size_precision'] . 'f%s%s',
-				$size,
-				( $this->options['size_space'] ? ' ' : '' ),
-				$val[ $i ]
-			);
+		return null;
 	}
 
 	/**
@@ -124,29 +82,11 @@ class Flush_Opcache_Statistics {
 	 * @return array
 	 */
 	protected function merge_stats(): array {
-			$status         = opcache_get_status();
-			$config         = opcache_get_configuration();
-			$missing_config = array_diff_key( ini_get_all( 'zend opcache', false ), $config['directives'] );
+		$status         = opcache_get_status();
+		$config         = opcache_get_configuration();
+		$missing_config = array_diff_key( ini_get_all( 'zend opcache', false ), $config['directives'] );
 		if ( ! empty( $missing_config ) ) {
-				$config['directives'] = array_merge( $config['directives'], $missing_config );
-		}
-
-			$files = array();
-		if ( ! empty( $status['scripts'] ) && $this->options['allow_filelist'] ) {
-				uasort(
-					$status['scripts'],
-					function ( $a, $b ) {
-							return $a['hits'] < $b['hits'];
-					}
-				);
-			foreach ( $status['scripts'] as &$file ) {
-				$file['full_path'] = str_replace( '\\', '/', $file['full_path'] );
-				$file['readable']  = array(
-					'hits'               => number_format( $file['hits'] ),
-					'memory_consumption' => $this->size( $file['memory_consumption'] ),
-				);
-			}
-				$files = array_values( $status['scripts'] );
+			$config['directives'] = array_merge( $config['directives'], $missing_config );
 		}
 
 		if ( $config['directives']['opcache.file_cache_only'] || ! empty( $status['file_cache_only'] ) ) {
@@ -158,23 +98,23 @@ class Flush_Opcache_Statistics {
 					array(
 						'used_memory_percentage' => round(
 							100 * (
-									( $status['memory_usage']['used_memory'] + $status['memory_usage']['wasted_memory'] )
-									/ $config['directives']['opcache.memory_consumption']
-									)
+							( $status['memory_usage']['used_memory'] + $status['memory_usage']['wasted_memory'] )
+							/ $config['directives']['opcache.memory_consumption']
+							)
 						),
 						'hit_rate_percentage'    => round( $status['opcache_statistics']['opcache_hit_rate'] ),
 						'used_key_percentage'    => round(
 							100 * (
-									$status['opcache_statistics']['num_cached_keys']
-									/ $status['opcache_statistics']['max_cached_keys']
-									)
+							$status['opcache_statistics']['num_cached_keys']
+							/ $status['opcache_statistics']['max_cached_keys']
+							)
 						),
 						'wasted_percentage'      => round( $status['memory_usage']['current_wasted_percentage'], 2 ),
 						'readable'               => array(
-							'total_memory'       => $this->size( $config['directives']['opcache.memory_consumption'] ),
-							'used_memory'        => $this->size( $status['memory_usage']['used_memory'] ),
-							'free_memory'        => $this->size( $status['memory_usage']['free_memory'] ),
-							'wasted_memory'      => $this->size( $status['memory_usage']['wasted_memory'] ),
+							'total_memory'       => size_format( $config['directives']['opcache.memory_consumption'] ),
+							'used_memory'        => size_format( $status['memory_usage']['used_memory'] ),
+							'free_memory'        => size_format( $status['memory_usage']['free_memory'] ),
+							'wasted_memory'      => size_format( $status['memory_usage']['wasted_memory'] ),
 							'num_cached_scripts' => number_format( $status['opcache_statistics']['num_cached_scripts'] ),
 							'hits'               => number_format( $status['opcache_statistics']['hits'] ),
 							'misses'             => number_format( $status['opcache_statistics']['misses'] ),
@@ -192,70 +132,70 @@ class Flush_Opcache_Statistics {
 				);
 		}
 
-			$preload = array();
-		if ( ! empty( $status['preload_statistics']['scripts'] ) && $this->options['allow_filelist'] ) {
-				$preload = $status['preload_statistics']['scripts'];
-				sort( $preload, SORT_STRING );
+		$preload = array();
+		if ( ! empty( $status['preload_statistics']['scripts'] ) ) {
+			$preload = $status['preload_statistics']['scripts'];
+			sort( $preload, SORT_STRING );
 			if ( $overview ) {
-					$overview['preload_memory']             = $status['preload_statistics']['memory_consumption'];
-					$overview['readable']['preload_memory'] = $this->size( $status['preload_statistics']['memory_consumption'] );
+				$overview['preload_memory']             = $status['preload_statistics']['memory_consumption'];
+				$overview['readable']['preload_memory'] = size_format( $status['preload_statistics']['memory_consumption'] );
 			}
 		}
 
 		if ( ! empty( $status['interned_strings_usage'] ) ) {
-				$overview['readable']['interned'] = array(
-					'buffer_size'         => $this->size( $status['interned_strings_usage']['buffer_size'] ),
-					'strings_used_memory' => $this->size( $status['interned_strings_usage']['used_memory'] ),
-					'strings_free_memory' => $this->size( $status['interned_strings_usage']['free_memory'] ),
-					'number_of_strings'   => number_format( $status['interned_strings_usage']['number_of_strings'] ),
-				);
+			$overview['readable']['interned'] = array(
+				'buffer_size'         => size_format( $status['interned_strings_usage']['buffer_size'] ),
+				'strings_used_memory' => size_format( $status['interned_strings_usage']['used_memory'] ),
+				'strings_free_memory' => size_format( $status['interned_strings_usage']['free_memory'] ),
+				'number_of_strings'   => number_format( $status['interned_strings_usage']['number_of_strings'] ),
+			);
 		}
 
-			$directives = array();
-			ksort( $config['directives'] );
+		$directives = array();
+		ksort( $config['directives'] );
 		foreach ( $config['directives'] as $k => $v ) {
 			if ( in_array( $k, array( 'opcache.max_file_size', 'opcache.memory_consumption' ), true ) && $v ) {
-					$v = $this->size( $v ) . " ({$v})";
+				$v = size_format( $v ) . " ({$v})";
 			} elseif ( 'opcache.optimization_level' === $k ) {
-					$levels = array();
+				$levels = array();
 				foreach ( $this->optimization_levels as $level => $info ) {
 					if ( $level & $v ) {
 						$levels[] = $info;
 					}
 				}
-					$v = isset( $levels ) ? $levels : 'none';
+				$v = isset( $levels ) ? $levels : 'none';
 			}
-				$directives[] = array(
-					'k' => $k,
-					'v' => $v,
-				);
+			$directives[] = array(
+				'k' => $k,
+				'v' => $v,
+			);
 		}
 
-			$version = array_merge(
-				$config['version'],
-				array(
-					'php'    => phpversion(),
-					'server' => isset( $_SERVER['SERVER_SOFTWARE'] ) ? $_SERVER['SERVER_SOFTWARE'] : '', // phpcs:ignore
-					'host'   => ( function_exists( 'gethostname' )
-							? gethostname()
-							: ( php_uname( 'n' )
-									?: ( empty( $_SERVER['SERVER_NAME'] ) // phpcs:ignore
-											? $_SERVER['HOST_NAME'] // phpcs:ignore
-											: $_SERVER['SERVER_NAME'] // phpcs:ignore
-									)
+		$version = array_merge(
+			$config['version'],
+			array(
+				'php'    => phpversion(),
+				'server' => isset( $_SERVER['SERVER_SOFTWARE'] ) ? $_SERVER['SERVER_SOFTWARE'] : '', // phpcs:ignore
+				'host'   => ( function_exists( 'gethostname' )
+						? gethostname()
+						: ( php_uname( 'n' )
+							?: ( empty( $_SERVER['SERVER_NAME'] ) // phpcs:ignore
+								? $_SERVER['HOST_NAME'] // phpcs:ignore
+								: $_SERVER['SERVER_NAME'] // phpcs:ignore
 							)
-					),
-				)
-			);
+						)
+				),
+			)
+		);
 
-			return array(
-				'version'    => $version,
-				'overview'   => $overview,
-				'files'      => $files,
-				'preload'    => $preload,
-				'directives' => $directives,
-				'blacklist'  => $config['blacklist'],
-				'functions'  => get_extension_funcs( 'Zend OPcache' ),
-			);
+		return array(
+			'version'    => $version,
+			'overview'   => $overview,
+			'preload'    => $preload,
+			'directives' => $directives,
+			'blacklist'  => $config['blacklist'],
+			'functions'  => get_extension_funcs( 'Zend OPcache' ),
+		);
+
 	}
 }

@@ -47,6 +47,7 @@ class Flush_Opcache {
 	private function load_dependencies() {
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-flush-opcache-i18n.php';
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'admin/class-flush-opcache-admin.php';
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'admin/class-flush-opcache-cached-files-list.php';
 	}
 
 	/**
