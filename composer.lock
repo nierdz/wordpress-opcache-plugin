@@ -9,16 +9,16 @@
     "packages-dev": [
         {
             "name": "automattic/vipwpcs",
-            "version": "2.3.0",
+            "version": "2.3.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Automattic/VIP-Coding-Standards.git",
-                "reference": "a2eef7f48e31a8c35305ed4bf576ef7a484d9f3c"
+                "reference": "90173cec6f4df2af9a31627f4880874d788459ab"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Automattic/VIP-Coding-Standards/zipball/a2eef7f48e31a8c35305ed4bf576ef7a484d9f3c",
-                "reference": "a2eef7f48e31a8c35305ed4bf576ef7a484d9f3c",
+                "url": "https://api.github.com/repos/Automattic/VIP-Coding-Standards/zipball/90173cec6f4df2af9a31627f4880874d788459ab",
+                "reference": "90173cec6f4df2af9a31627f4880874d788459ab",
                 "shasum": ""
             },
             "require": {
@@ -57,7 +57,7 @@
                 "source": "https://github.com/Automattic/VIP-Coding-Standards",
                 "wiki": "https://github.com/Automattic/VIP-Coding-Standards/wiki"
             },
-            "time": "2021-04-19T16:40:16+00:00"
+            "time": "2021-04-23T14:52:17+00:00"
         },
         {
             "name": "dealerdirect/phpcodesniffer-composer-installer",
