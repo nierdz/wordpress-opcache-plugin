@@ -47,6 +47,7 @@ class Flush_Opcache {
 	private function load_dependencies() {
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-flush-opcache-i18n.php';
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'admin/class-flush-opcache-admin.php';
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'admin/class-flush-opcache-cached-files-list.php';
 	}
 
 	/**
@@ -73,7 +74,7 @@ class Flush_Opcache {
 		add_action( 'admin_init', array( $admin, 'register_flush_opcache_settings' ) );
 		add_action( 'upgrader_process_complete', array( $admin, 'flush_opcache_after_wp_update' ) );
 		if ( isset( $_GET['page'] ) && ( 'flush-opcache-statistics' === $_GET['page'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
-			add_action( 'admin_enqueue_scripts', array( $admin, 'enqueue_script' ) );
+			add_action( 'admin_enqueue_scripts', array( $admin, 'enqueue_styles' ) );
 		}
 	}
 

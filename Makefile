@@ -28,13 +28,14 @@ install-pip-packages: $(VIRTUALENV_DIR) $(VIRTUALENV_DIR)/bin/pre-commit ## Inst
 
 install: install-pip-packages composer-install ## Install everything
 
-composer-install: ## Install and setup wpcs
+composer-install: ## Install composer packages
 	composer install
 
 tests: ## Run all phpcs tests
 	phpcs \
 		-v \
-		--ignore=flush-opcache/admin/opcache.php,flush-opcache/admin/js/d3.min.js \
+		-s \
+		--ignore=flush-opcache/vendor \
 		--standard=WordPress \
 		flush-opcache/
 	pre-commit run --all-files

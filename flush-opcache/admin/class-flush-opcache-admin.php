@@ -22,7 +22,7 @@ class Flush_Opcache_Admin {
 	private $name;
 
 	/**
-	 * * Version of the plugin
+	 * Version of the plugin
 	 *
 	 * @var string
 	 */
@@ -42,15 +42,15 @@ class Flush_Opcache_Admin {
 	}
 
 	/**
-	 * Enqueue d3js in admin area
+	 * Enqueue style.css when in stats admin area
 	 */
-	public function enqueue_script() {
-		wp_enqueue_script(
-			'd3js',
-			plugin_dir_url( __FILE__ ) . 'js/d3.min.js',
+	public function enqueue_styles() {
+		wp_enqueue_style(
+			'flush-opcache',
+			plugin_dir_url( __FILE__ ) . 'css/style.css',
 			array(),
-			'3.5.17',
-			false
+			$this->version,
+			'all'
 		);
 	}
 
@@ -82,6 +82,14 @@ class Flush_Opcache_Admin {
 				'flush-opcache-statistics',
 				array( $this, 'flush_opcache_admin_stats' )
 			);
+			add_submenu_page(
+				'flush-opcache',
+				__( 'WP OPcache cached files', 'flush-opcache' ),
+				__( 'Cached files', 'flush-opcache' ),
+				'manage_network_options',
+				'flush-opcache-cached-files',
+				array( $this, 'flush_opcache_admin_cached_files' )
+			);
 		} elseif ( ! is_multisite() && is_admin() ) {
 			add_menu_page(
 				__( 'WP OPcache Settings', 'flush-opcache' ),
@@ -105,6 +113,14 @@ class Flush_Opcache_Admin {
 				'manage_options',
 				'flush-opcache-statistics',
 				array( $this, 'flush_opcache_admin_stats' )
+			);
+			add_submenu_page(
+				'flush-opcache',
+				__( 'WP OPcache cached files', 'flush-opcache' ),
+				__( 'Cached files', 'flush-opcache' ),
+				'manage_options',
+				'flush-opcache-cached-files',
+				array( $this, 'flush_opcache_admin_cached_files' )
 			);
 		}
 	}
@@ -203,6 +219,32 @@ class Flush_Opcache_Admin {
 	 */
 	public function flush_opcache_admin_stats() {
 		require_once 'opcache.php';
+	}
+
+	/**
+	 * Populate cached files admin page
+	 */
+	public function flush_opcache_admin_cached_files() {
+		?>
+		<div class="wrap">
+			<div id="poststuff">
+				<div id="post-body" class="metabox-holder">
+
+					<h1><?php esc_attr_e( 'OPcache cached files', 'flush-opcache' ); ?></h1>
+
+					<form method="get">
+						<input type="hidden" name="page" value="flush-opcache-cached-files" />
+						<?php $flush_opcache_cached_files_list = new Flush_Opcache_Cached_Files_List(); ?>
+						<?php $flush_opcache_cached_files_list->prepare_items(); ?>
+						<?php $flush_opcache_cached_files_list->remove_parameters(); ?>
+						<?php $flush_opcache_cached_files_list->search_box( __( 'Search files', 'flush-opcache' ), 'search_id' ); ?>
+						<?php $flush_opcache_cached_files_list->display(); ?>
+					</form>
+
+				</div>
+			</div>
+		</div>
+		<?php
 	}
 
 	/**
