@@ -190,7 +190,7 @@ class Flush_Opcache_Admin {
 	private function manage_tabs() {
 
 		$settings_tabs                 = array();
-		$settings_tabs['settings']     = __( 'General Settings', 'flush-opcache' );
+		$settings_tabs['settings']     = __( 'General settings', 'flush-opcache' );
 		$settings_tabs['statistics']   = __( 'Statistics', 'flush-opcache' );
 		$settings_tabs['cached_files'] = __( 'Cached files', 'flush-opcache' );
 
