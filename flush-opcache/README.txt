@@ -24,10 +24,11 @@ As usual...
 
 == Screenshots ==
 
-1. Here is the button you'll get using Flush OPcache
-2. When you just flushed OPcache, here is a notice
-3. General settings tabs
-4. Statistics tabs
+1. Flush button in admin bar
+2. WordPress Notice after flushing OPcache
+3. General settings tab
+4. Statistics tab
+5. Cached files tab
 
 == Changelog ==
 
