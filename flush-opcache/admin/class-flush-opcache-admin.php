@@ -114,7 +114,6 @@ class Flush_Opcache_Admin {
 	private function page_settings() {
 		?>
 	<div class="wrap">
-		<h1><?php esc_html_e( 'Settings', 'flush-opcache' ); ?></h1>
 		<?php if ( isset( $_GET['page'] ) && isset( $_GET['settings-updated'] ) && 'flush-opcache' === $_GET['page'] && 'true' === $_GET['settings-updated'] ) { // phpcs:ignore WordPress.Security.NonceVerification ?>
 		<div id="message" class="updated notice is-dismissible">
 			<p><?php esc_html_e( 'Settings saved.', 'wporg' ); ?></p>
@@ -221,8 +220,6 @@ class Flush_Opcache_Admin {
 		<div class="wrap">
 			<div id="poststuff">
 				<div id="post-body" class="metabox-holder">
-
-					<h1><?php esc_attr_e( 'OPcache cached files', 'flush-opcache' ); ?></h1>
 
 					<form method="get">
 						<input type="hidden" name="page" value="flush-opcache" />

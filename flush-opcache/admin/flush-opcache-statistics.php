@@ -33,8 +33,6 @@ $opcache_data_directives        = $opcache_data->get_stats( 'directives' );
 	<div id="poststuff">
 		<div id="post-body" class="metabox-holder">
 
-			<h1><?php esc_attr_e( 'OPcache statistics', 'flush-opcache' ); ?></h1>
-
 			<div id="postbox-container-1" class="postbox-container">
 				<div class="meta-box-sortables flush-opcache-widget-container">
 
