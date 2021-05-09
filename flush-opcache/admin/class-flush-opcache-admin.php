@@ -64,31 +64,7 @@ class Flush_Opcache_Admin {
 				__( 'WP OPcache', 'flush-opcache' ),
 				'manage_network_options',
 				'flush-opcache',
-				array( $this, 'flush_opcache_admin_options' )
-			);
-			add_submenu_page(
-				'flush-opcache',
-				__( 'WP OPcache Settings', 'flush-opcache' ),
-				__( 'Settings', 'wporg' ),
-				'manage_network_options',
-				'flush-opcache',
-				array( $this, 'flush_opcache_admin_options' )
-			);
-			add_submenu_page(
-				'flush-opcache',
-				__( 'WP OPcache Statistics', 'flush-opcache' ),
-				__( 'Statistics', 'flush-opcache' ),
-				'manage_network_options',
-				'flush-opcache-statistics',
-				array( $this, 'flush_opcache_admin_stats' )
-			);
-			add_submenu_page(
-				'flush-opcache',
-				__( 'WP OPcache cached files', 'flush-opcache' ),
-				__( 'Cached files', 'flush-opcache' ),
-				'manage_network_options',
-				'flush-opcache-cached-files',
-				array( $this, 'flush_opcache_admin_cached_files' )
+				array( $this, 'flush_opcache_admin_page' )
 			);
 		} elseif ( ! is_multisite() && is_admin() ) {
 			add_menu_page(
@@ -96,39 +72,15 @@ class Flush_Opcache_Admin {
 				__( 'WP OPcache', 'flush-opcache' ),
 				'manage_options',
 				'flush-opcache',
-				array( $this, 'flush_opcache_admin_options' )
-			);
-			add_submenu_page(
-				'flush-opcache',
-				__( 'WP OPcache Settings', 'flush-opcache' ),
-				__( 'Settings', 'wporg' ),
-				'manage_options',
-				'flush-opcache',
-				array( $this, 'flush_opcache_admin_options' )
-			);
-			add_submenu_page(
-				'flush-opcache',
-				__( 'WP OPcache Statistics', 'flush-opcache' ),
-				__( 'Statistics', 'flush-opcache' ),
-				'manage_options',
-				'flush-opcache-statistics',
-				array( $this, 'flush_opcache_admin_stats' )
-			);
-			add_submenu_page(
-				'flush-opcache',
-				__( 'WP OPcache cached files', 'flush-opcache' ),
-				__( 'Cached files', 'flush-opcache' ),
-				'manage_options',
-				'flush-opcache-cached-files',
-				array( $this, 'flush_opcache_admin_cached_files' )
+				array( $this, 'flush_opcache_admin_page' )
 			);
 		}
 	}
 
 	/**
-	 * Populate setup admin page
+	 * Populate admin page
 	 */
-	public function flush_opcache_admin_options() {
+	public function flush_opcache_admin_page() {
 		if ( ! is_admin() ) {
 			wp_die( esc_html__( 'Sorry, you are not allowed to access this page.', 'wporg' ) );
 		}
@@ -141,7 +93,26 @@ class Flush_Opcache_Admin {
 			echo '<div class="notice notice-error">
               <p>' . esc_html__( 'Zend OPcache is loaded but not activated. You need to set opcache.enable=1 in your php.ini', 'flush-opcache' ) . '</p>
             </div>';
-		} ?>
+		}
+		$current_tab = $this->manage_tabs();
+		switch ( $current_tab ) {
+			case 'settings':
+				$this->page_settings();
+				break;
+			case 'statistics':
+				$this->page_statistics();
+				break;
+			case 'cached_files':
+				$this->page_cached_files();
+				break;
+		}
+	}
+
+	/**
+	 * Populate settings tab of admin page
+	 */
+	private function page_settings() {
+		?>
 	<div class="wrap">
 		<h1><?php esc_html_e( 'Settings', 'flush-opcache' ); ?></h1>
 		<?php if ( isset( $_GET['page'] ) && isset( $_GET['settings-updated'] ) && 'flush-opcache' === $_GET['page'] && 'true' === $_GET['settings-updated'] ) { // phpcs:ignore WordPress.Security.NonceVerification ?>
@@ -215,16 +186,37 @@ class Flush_Opcache_Admin {
 	}
 
 	/**
-	 * Populate statistics admin page
+	 * Display tabs of admin page
 	 */
-	public function flush_opcache_admin_stats() {
+	private function manage_tabs() {
+
+		$settings_tabs                 = array();
+		$settings_tabs['settings']     = __( 'General Settings', 'flush-opcache' );
+		$settings_tabs['statistics']   = __( 'Statistics', 'flush-opcache' );
+		$settings_tabs['cached_files'] = __( 'Cached files', 'flush-opcache' );
+
+		$current_tab = isset( $_GET['tab'] ) ? sanitize_key( $_GET['tab'] ) : 'settings'; // phpcs:ignore WordPress.Security.NonceVerification
+		echo '<h2 class="nav-tab-wrapper">';
+		foreach ( $settings_tabs as $tab_key => $tab_caption ) {
+			$active = ( $current_tab === $tab_key ) ? ' nav-tab-active' : '';
+			echo '<a class="nav-tab' . esc_attr( $active ) . '" href="?page=flush-opcache&amp;tab=' . esc_attr( $tab_key ) . '">' . esc_attr( $tab_caption ) . '</a>';
+		}
+		echo '</h2>';
+
+		return $current_tab;
+	}
+
+	/**
+	 * Populate statistics tab of admin page
+	 */
+	private function page_statistics() {
 		require_once 'opcache.php';
 	}
 
 	/**
-	 * Populate cached files admin page
+	 * Populate cached files tab of admin page
 	 */
-	public function flush_opcache_admin_cached_files() {
+	public function page_cached_files() {
 		?>
 		<div class="wrap">
 			<div id="poststuff">
@@ -233,7 +225,7 @@ class Flush_Opcache_Admin {
 					<h1><?php esc_attr_e( 'OPcache cached files', 'flush-opcache' ); ?></h1>
 
 					<form method="get">
-						<input type="hidden" name="page" value="flush-opcache-cached-files" />
+						<input type="hidden" name="page" value="flush-opcache" />
 						<?php $flush_opcache_cached_files_list = new Flush_Opcache_Cached_Files_List(); ?>
 						<?php $flush_opcache_cached_files_list->prepare_items(); ?>
 						<?php $flush_opcache_cached_files_list->remove_parameters(); ?>
