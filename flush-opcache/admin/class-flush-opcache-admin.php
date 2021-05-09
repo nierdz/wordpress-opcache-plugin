@@ -210,7 +210,7 @@ class Flush_Opcache_Admin {
 	 * Populate statistics tab of admin page
 	 */
 	private function page_statistics() {
-		require_once 'opcache.php';
+		require_once 'flush-opcache-statistics.php';
 	}
 
 	/**
