@@ -311,15 +311,27 @@ class Flush_Opcache_Admin {
 	 * Where OPcache is actually flushed
 	 */
 	public function flush_opcache_reset() {
-		if ( function_exists( 'opcache_reset' ) ) {
-			if ( ini_get( 'opcache.file_cache' ) && is_writable( ini_get( 'opcache.file_cache' ) ) ) {
-				$files = new RecursiveIteratorIterator( new RecursiveDirectoryIterator( ini_get( 'opcache.file_cache' ), RecursiveDirectoryIterator::SKIP_DOTS ), RecursiveIteratorIterator::CHILD_FIRST );
-				foreach ( $files as $fileinfo ) {
-					$todo = ( $fileinfo->isDir() ? 'rmdir' : 'unlink' );
-					$todo( $fileinfo->getRealPath() );
+		$opcache_scripts = array();
+		if ( function_exists( 'opcache_get_status' ) ) {
+			try {
+				$raw = opcache_get_status( true );
+				if ( array_key_exists( 'scripts', $raw ) ) {
+					foreach ( $raw['scripts'] as $script ) {
+						/* Remove files outside of WP */
+						if ( false === strpos( $script['full_path'], ABSPATH ) ) {
+							continue;
+						}
+						array_push( $opcache_scripts, $script['full_path'] );
+					}
 				}
+			} catch ( \Throwable $e ) {
+				error_log( sprintf( 'Unable to query OPcache status: %s.', $e->getMessage() ), $e->getCode() ); // phpcs:ignore
 			}
-			opcache_reset();
+		}
+		if ( function_exists( 'opcache_invalidate' ) ) {
+			foreach ( $opcache_scripts as $file ) {
+				opcache_invalidate( $file, true );
+			}
 		}
 	}
 
