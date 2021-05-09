@@ -224,7 +224,7 @@ class Flush_Opcache_Cached_Files_List extends WP_List_Table {
 				( $this->current_action() === 'delete' && wp_verify_nonce( $_REQUEST['_wpnonce'] ) ) // phpcs:ignore
 		) {
 			foreach ( $array_file as $file ) {
-				opcache_invalidate( $file, true );
+				opcache_invalidate( ABSPATH . $file, true );
 			}
 		}
 	}
@@ -250,6 +250,54 @@ class Flush_Opcache_Cached_Files_List extends WP_List_Table {
 			'action2',
 		);
 		$_SERVER['REQUEST_URI'] = remove_query_arg( $options, $_SERVER['REQUEST_URI'] ); // phpcs:ignore
+	}
+
+	/**
+	 * Displays the search box.
+	 *
+	 * @param string $text     The 'submit' button label.
+	 * @param string $input_id ID attribute value for the search input field.
+	 */
+	public function search_box( $text, $input_id ) {
+		if ( empty( $_REQUEST['s'] ) && ! $this->has_items() ) { // phpcs:ignore
+			return;
+		}
+
+		$input_id = $input_id . '-search-input';
+
+		if ( ! empty( $_REQUEST['orderby'] ) ) { // phpcs:ignore
+			echo '<input type="hidden" name="orderby" value="' . esc_attr( wp_unslash( $_REQUEST['orderby'] ) ) . '" />'; // phpcs:ignore
+		}
+		if ( ! empty( $_REQUEST['order'] ) ) { // phpcs:ignore
+			echo '<input type="hidden" name="order" value="' . esc_attr( wp_unslash( $_REQUEST['order'] ) ) . '" />'; // phpcs:ignore
+		}
+		if ( ! empty( $_REQUEST['post_mime_type'] ) ) { // phpcs:ignore
+			echo '<input type="hidden" name="post_mime_type" value="' . esc_attr( wp_unslash( $_REQUEST['post_mime_type'] ) ) . '" />'; // phpcs:ignore
+		}
+		if ( ! empty( $_REQUEST['detached'] ) ) { // phpcs:ignore
+			echo '<input type="hidden" name="detached" value="' . esc_attr( wp_unslash( $_REQUEST['detached'] ) ) . '" />'; // phpcs:ignore
+		}
+		if ( ! empty( $_REQUEST['tab'] ) ) { // phpcs:ignore
+			echo '<input type="hidden" name="tab" value="' . esc_attr( wp_unslash( $_REQUEST['tab'] ) ) . '" />'; // phpcs:ignore
+		}
+		?>
+<p class="search-box">
+	<label class="screen-reader-text" for="<?php echo esc_attr( $input_id ); ?>"><?php echo esc_attr( $text ); ?>:</label>
+	<input type="search" id="<?php echo esc_attr( $input_id ); ?>" name="s" value="<?php _admin_search_query(); ?>" />
+		<?php
+		submit_button(
+			$text,
+			'',
+			'',
+			false,
+			array(
+				'id'  => 'search-submit',
+				'tab' => 'cached_files',
+			)
+		);
+		?>
+</p>
+		<?php
 	}
 
 }

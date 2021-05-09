@@ -73,8 +73,10 @@ class Flush_Opcache {
 		add_action( 'admin_bar_menu', array( $admin, 'flush_opcache_button' ), 100 );
 		add_action( 'admin_init', array( $admin, 'register_flush_opcache_settings' ) );
 		add_action( 'upgrader_process_complete', array( $admin, 'flush_opcache_after_wp_update' ) );
-		if ( isset( $_GET['page'] ) && ( 'flush-opcache-statistics' === $_GET['page'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
-			add_action( 'admin_enqueue_scripts', array( $admin, 'enqueue_styles' ) );
+		if ( isset( $_GET['page'] ) && ( 'flush-opcache' === $_GET['page'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
+			if ( isset( $_GET['tab'] ) && ( 'statistics' === $_GET['tab'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
+				add_action( 'admin_enqueue_scripts', array( $admin, 'enqueue_styles' ) );
+			}
 		}
 	}
 
