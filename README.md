@@ -6,5 +6,5 @@ https://wordpress.org/plugins/flush-opcache/
 
 ## When I need to release a new version
 ###### Reminder for my deficient brain :monkey_face:
-- Update [README.txt](flush-opcache/README.txt)
+- Update [readme.txt](flush-opcache/readme.txt)
 - Update [flush-opcache.php](flush-opcache/flush-opcache.php)
