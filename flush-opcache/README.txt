@@ -12,7 +12,7 @@ Manage OPcache inside your WordPress admin dashboard.
 
 == Description ==
 
-** Flush OPcache **
+**Flush OPcache**
 
 * add a button in admin bar to flush OPcache
 * flush only files in WordPress absolute path
@@ -20,7 +20,7 @@ Manage OPcache inside your WordPress admin dashboard.
 * support both memory and file caching
 * support multisite
 
-** OPcache Statistics **
+**OPcache Statistics**
 
 * memory, hits, strings and keys statistics
 * directives, functions and general informations
