@@ -1,7 +1,7 @@
 === WP OPcache ===
 Contributors: mnttech
 Tags: opcache, cache, flush, php, multisite
-Requires at least: 4.3
+Requires at least: 4.6
 Requires PHP: 7.2
 Tested up to: 5.7
 Stable tag: 4.0.1
