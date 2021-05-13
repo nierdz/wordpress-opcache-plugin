@@ -325,10 +325,8 @@ class Flush_Opcache_Admin {
 				error_log( sprintf( 'Unable to query OPcache status: %s.', $e->getMessage() ), $e->getCode() ); // phpcs:ignore
 			}
 		}
-		if ( function_exists( 'opcache_invalidate' ) ) {
-			foreach ( $opcache_scripts as $file ) {
-				opcache_invalidate( $file, true );
-			}
+		foreach ( $opcache_scripts as $file ) {
+			wp_opcache_invalidate( $file, true );
 		}
 	}
 
