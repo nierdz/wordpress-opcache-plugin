@@ -37,7 +37,6 @@ class Flush_Opcache {
 		$this->version = FLUSH_OPCACHE_VERSION;
 		$this->name    = FLUSH_OPCACHE_NAME;
 		$this->load_dependencies();
-		$this->set_locale();
 		$this->create_admin();
 	}
 
@@ -45,17 +44,8 @@ class Flush_Opcache {
 	 * Load all php dependencies
 	 */
 	private function load_dependencies() {
-		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-flush-opcache-i18n.php';
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'admin/class-flush-opcache-admin.php';
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'admin/class-flush-opcache-cached-files-list.php';
-	}
-
-	/**
-	 * Load i18n file
-	 */
-	private function set_locale() {
-		$plugin_i18n = new Flush_Opcache_I18n();
-		add_action( 'plugins_loaded', array( $plugin_i18n, 'load_plugin_textdomain' ) );
 	}
 
 	/**

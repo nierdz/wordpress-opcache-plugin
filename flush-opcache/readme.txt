@@ -1,10 +1,10 @@
 === WP OPcache ===
 Contributors: mnttech
 Tags: opcache, cache, flush, php, multisite
-Requires at least: 4.3
+Requires at least: 5.5
 Requires PHP: 7.2
-Tested up to: 5.7.1
-Stable tag: 4.0.1
+Tested up to: 5.7
+Stable tag: 4.1.0
 License: GPLv2
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -12,7 +12,7 @@ Manage OPcache inside your WordPress admin dashboard.
 
 == Description ==
 
-** Flush OPcache **
+**Flush OPcache**
 
 * add a button in admin bar to flush OPcache
 * flush only files in WordPress absolute path
@@ -20,7 +20,7 @@ Manage OPcache inside your WordPress admin dashboard.
 * support both memory and file caching
 * support multisite
 
-** OPcache Statistics **
+**OPcache Statistics**
 
 * memory, hits, strings and keys statistics
 * directives, functions and general informations
@@ -46,5 +46,19 @@ As usual...
 5. Cached files tab
 
 == Changelog ==
+
+= 4.1.0 =
+* Remove i18n (use translate.wordpress.org)
+* Use wp_opcache_invalidate instead of opcache_invalidate
+
+= 4.0.1 =
+* Enhance README.txt
+* Remove old screenshots
+
+= 4.0.0 =
+* Invalidate files only in WordPress absolute path
+* Use tabs instead of pages in admin area
+* New tab with cached files list
+* Tested up to WordPress 5.7.1
 
 Full changelog [here](https://github.com/nierdz/flush-opcache/releases)

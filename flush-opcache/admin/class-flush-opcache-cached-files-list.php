@@ -224,7 +224,7 @@ class Flush_Opcache_Cached_Files_List extends WP_List_Table {
 				( $this->current_action() === 'delete' && wp_verify_nonce( $_REQUEST['_wpnonce'] ) ) // phpcs:ignore
 		) {
 			foreach ( $array_file as $file ) {
-				opcache_invalidate( ABSPATH . $file, true );
+				wp_opcache_invalidate( ABSPATH . $file, true );
 			}
 		}
 	}
