@@ -47,4 +47,14 @@ As usual...
 
 == Changelog ==
 
+= 4.0.1 =
+* Enhance README.txt
+* Remove old screenshots
+
+= 4.0.0 =
+* Invalidate files only in WordPress absolute path
+* Use tabs instead of pages in admin area
+* New tab with cached files list
+* Tested up to WordPress 5.7.1
+
 Full changelog [here](https://github.com/nierdz/flush-opcache/releases)
