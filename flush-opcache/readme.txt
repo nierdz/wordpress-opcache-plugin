@@ -3,8 +3,8 @@ Contributors: mnttech
 Tags: opcache, cache, flush, php, multisite
 Requires at least: 5.5
 Requires PHP: 7.2
-Tested up to: 5.7
-Stable tag: 4.1.0
+Tested up to: 5.8
+Stable tag: 4.1.1
 License: GPLv2
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -46,6 +46,9 @@ As usual...
 5. Cached files tab
 
 == Changelog ==
+
+= 4.1.1 =
+* Tested up to WordPress 5.8
 
 = 4.1.0 =
 * Remove i18n (use translate.wordpress.org)
