@@ -4,7 +4,7 @@ Tags: opcache, cache, flush, php, multisite
 Requires at least: 5.5
 Requires PHP: 7.2
 Tested up to: 5.8
-Stable tag: 4.1.1
+Stable tag: 4.1.2
 License: GPLv2
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
