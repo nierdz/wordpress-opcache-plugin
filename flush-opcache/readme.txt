@@ -47,6 +47,9 @@ As usual...
 
 == Changelog ==
 
+= 4.1.2 =
+* Fix a bug with ABSPATH when WordPress uses its own directory
+
 = 4.1.1 =
 * Tested up to WordPress 5.8
 
