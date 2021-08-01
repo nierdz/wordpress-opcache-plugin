@@ -315,7 +315,7 @@ class Flush_Opcache_Admin {
 				if ( array_key_exists( 'scripts', $raw ) ) {
 					foreach ( $raw['scripts'] as $script ) {
 						/* Remove files outside of WP */
-						if ( false === strpos( $script['full_path'], ABSPATH ) ) {
+						if ( false === strpos( $script['full_path'], get_home_path() ) ) {
 							continue;
 						}
 						array_push( $opcache_scripts, $script['full_path'] );
