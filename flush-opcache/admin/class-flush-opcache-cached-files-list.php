@@ -102,11 +102,11 @@ class Flush_Opcache_Cached_Files_List extends WP_List_Table {
 				if ( array_key_exists( 'scripts', $raw ) ) {
 					foreach ( $raw['scripts'] as $script ) {
 						/* Remove files outside of WP */
-						if ( false === strpos( $script['full_path'], ABSPATH ) ) {
+						if ( false === strpos( $script['full_path'], get_home_path() ) ) {
 							continue;
 						}
 						$item                        = array();
-						$item['full_path']           = str_replace( ABSPATH, './', $script['full_path'] );
+						$item['full_path']           = str_replace( get_home_path(), './', $script['full_path'] );
 						$item['hits']                = $script['hits'];
 						$item['memory_consumption']  = $script['memory_consumption'];
 						$item['timestamp']           = $script['timestamp'];
@@ -224,7 +224,7 @@ class Flush_Opcache_Cached_Files_List extends WP_List_Table {
 				( $this->current_action() === 'delete' && wp_verify_nonce( $_REQUEST['_wpnonce'] ) ) // phpcs:ignore
 		) {
 			foreach ( $array_file as $file ) {
-				wp_opcache_invalidate( ABSPATH . $file, true );
+				wp_opcache_invalidate( get_home_path() . $file, true );
 			}
 		}
 	}
