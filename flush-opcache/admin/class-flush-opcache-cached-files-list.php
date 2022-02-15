@@ -187,7 +187,8 @@ class Flush_Opcache_Cached_Files_List extends WP_List_Table {
 				break; // phpcs:ignore
 			case 'timestamp':
 			case 'last_used_timestamp':
-				return date_i18n( 'Y/m/d g:i:s A', $item[ $column_name ] );
+				$offset = get_option( 'gmt_offset' ) * HOUR_IN_SECONDS;
+				return date_i18n( 'Y/m/d g:i:s A', $item[ $column_name ] + $offset );
 				break; // phpcs:ignore
 			default:
 				return $item[ $column_name ];
