@@ -372,7 +372,7 @@ class Flush_Opcache_Admin {
 	 * Check if we need to flush OPcache after an update
 	 */
 	public function flush_opcache_after_wp_update() {
-		if ( get_site_option( 'flush-opcache-upgrade' ) === 1 ) {
+		if ( get_site_option( 'flush-opcache-upgrade' ) === '1' ) {
 			$this->flush_opcache_reset();
 		}
 	}
