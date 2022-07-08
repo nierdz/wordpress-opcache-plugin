@@ -2,9 +2,9 @@
 Contributors: mnttech
 Tags: opcache, cache, flush, php, multisite
 Requires at least: 5.5
-Requires PHP: 7.2
-Tested up to: 5.9
-Stable tag: 4.1.3
+Requires PHP: 7.4
+Tested up to: 6.0
+Stable tag: 4.1.4
 License: GPLv2
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -46,6 +46,12 @@ As usual...
 5. Cached files tab
 
 == Changelog ==
+
+= 4.1.4 =
+* Fix a bug on clearing cache after upgrade
+* Flush files even when WP use its own directory
+* Use WordPress 6.0 as default
+* Use php8.0 as default
 
 = 4.1.3 =
 * Fix a bug on datetime in cached file list
