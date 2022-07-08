@@ -102,11 +102,15 @@ class Flush_Opcache_Cached_Files_List extends WP_List_Table {
 				if ( array_key_exists( 'scripts', $raw ) ) {
 					foreach ( $raw['scripts'] as $script ) {
 						/* Remove files outside of WP */
-						if ( false === strpos( $script['full_path'], get_home_path() ) ) {
+						if ( false !== strpos( $script['full_path'], get_home_path() ) ) {
+							$home_path = get_home_path();
+						} elseif ( false !== strpos( $script['full_path'], ABSPATH ) ) {
+							$home_path = ABSPATH;
+						} else {
 							continue;
 						}
 						$item                        = array();
-						$item['full_path']           = str_replace( get_home_path(), './', $script['full_path'] );
+						$item['full_path']           = str_replace( $home_path, './', $script['full_path'] );
 						$item['hits']                = $script['hits'];
 						$item['memory_consumption']  = $script['memory_consumption'];
 						$item['timestamp']           = $script['timestamp'];

@@ -315,7 +315,7 @@ class Flush_Opcache_Admin {
 				if ( array_key_exists( 'scripts', $raw ) ) {
 					foreach ( $raw['scripts'] as $script ) {
 						/* Remove files outside of WP */
-						if ( false === strpos( $script['full_path'], get_home_path() ) ) {
+						if ( false === strpos( $script['full_path'], get_home_path() ) && false === strpos( $script['full_path'], ABSPATH ) ) {
 							continue;
 						}
 						array_push( $opcache_scripts, $script['full_path'] );
@@ -372,7 +372,7 @@ class Flush_Opcache_Admin {
 	 * Check if we need to flush OPcache after an update
 	 */
 	public function flush_opcache_after_wp_update() {
-		if ( get_site_option( 'flush-opcache-upgrade' ) === 1 ) {
+		if ( get_site_option( 'flush-opcache-upgrade' ) === '1' ) {
 			$this->flush_opcache_reset();
 		}
 	}
