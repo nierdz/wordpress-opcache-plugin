@@ -38,6 +38,7 @@ class Flush_Opcache {
 		$this->name    = FLUSH_OPCACHE_NAME;
 		$this->load_dependencies();
 		$this->create_admin();
+		$this->init_cli();
 	}
 
 	/**
@@ -46,6 +47,7 @@ class Flush_Opcache {
 	private function load_dependencies() {
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'admin/class-flush-opcache-admin.php';
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'admin/class-flush-opcache-cached-files-list.php';
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'cli/class-flush-opcache-cli.php';
 	}
 
 	/**
@@ -68,6 +70,20 @@ class Flush_Opcache {
 				add_action( 'admin_enqueue_scripts', array( $admin, 'enqueue_styles' ) );
 			}
 		}
+	}
+
+	/**
+	 * Init cli command.
+	 */
+	private function init_cli() {
+		$cli = new Flush_Opcache_Cli( $this->get_name(), $this->get_version() );
+
+		add_action(
+			'cli_init',
+			function() use ( $cli ) {
+				WP_CLI::add_command( 'flush-opcache', $cli );
+			}
+		);
 	}
 
 	/**
