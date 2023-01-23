@@ -40,7 +40,7 @@ services:
 
   wp-cli:
     container_name: wp-cli
-    image: wordpress:cli-php7.4
+    image: wordpress:cli-php8.1
     user: xfs # id 33 (id of www-data in other wp images)
     environment:
       WORDPRESS_DB_HOST: ${WORDPRESS_DB_HOST}
