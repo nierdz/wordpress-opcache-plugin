@@ -41,7 +41,7 @@ services:
   wp-cli:
     container_name: wp-cli
     image: wordpress:cli-php8.1
-    user: xfs # id 33 (id of www-data in other wp images)
+    user: www-data
     environment:
       WORDPRESS_DB_HOST: ${WORDPRESS_DB_HOST}
       WORDPRESS_DB_USER: ${WORDPRESS_DB_USER}
@@ -51,15 +51,18 @@ services:
     volumes:
       - wp_data:/var/www/html
       - ./flush-opcache:/var/www/html/wp-content/plugins/flush-opcache
-    command: >
-      /bin/bash -c "while !</dev/tcp/db/3306; do sleep 1; done;
-      wp core install \
-        --url=http://localhost \
-        --title=dev \
-        --admin_user=admin \
-        --admin_password=notsecurepassword \
-        --admin_email=nierdz@example.com;
-      wp plugin activate flush-opcache"
+    command:
+      - /bin/bash
+      - -c
+      - |
+        while !</dev/tcp/db/3306; do sleep 1; done
+        wp core install \
+          --url=http://localhost \
+          --title=dev \
+          --admin_user=admin \
+          --admin_password=notsecurepassword \
+          --admin_email=nierdz@example.com;
+        wp plugin activate flush-opcache
 
 volumes:
   wp_data:
