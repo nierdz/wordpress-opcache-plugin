@@ -17,3 +17,19 @@ jobs:
         run: make install
       - name: run tests
         run: make tests
+      - name: start dev stack
+        run: docker compose up -d
+      - name: run functional tests
+        run: |
+          while [[ $(docker inspect -f {{.State.Health.Status}} wordpress) != "healthy" ]];
+          do
+            echo "wordpress container is not healthy yet"
+            sleep 2
+          done
+          docker exec wordpress curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
+          docker exec wordpress chmod +x wp-cli.phar
+          docker exec wordpress mv wp-cli.phar /usr/local/bin/wp
+          docker exec wordpress bash -c 'echo "opcache.enable_cli=1" > /usr/local/etc/php/conf.d/opcache-recommended.ini'
+          docker exec wordpress apachectl -t
+          docker exec wordpress apachectl -k graceful
+          docker exec wordpress wp --allow-root flush-opcache flush
