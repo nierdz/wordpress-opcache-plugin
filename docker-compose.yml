@@ -23,7 +23,7 @@ services:
 
   db:
     container_name: db
-    image: mysql:5.7
+    image: mysql:8-debian
     restart: always
     environment:
       MYSQL_DATABASE: ${WORDPRESS_DB_NAME}
