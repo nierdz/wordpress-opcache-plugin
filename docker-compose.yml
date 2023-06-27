@@ -40,7 +40,7 @@ services:
 
   wp-cli:
     container_name: wp-cli
-    image: wordpress:cli-php8.1
+    image: wordpress:${WP_CLI_VERSION}
     user: www-data
     environment:
       WORDPRESS_DB_HOST: ${WORDPRESS_DB_HOST}
