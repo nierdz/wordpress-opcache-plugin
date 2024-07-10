@@ -23,7 +23,7 @@ services:
 
   db:
     container_name: db
-    image: mysql:5.7
+    image: mysql:8-debian
     restart: always
     environment:
       MYSQL_DATABASE: ${WORDPRESS_DB_NAME}
@@ -40,7 +40,7 @@ services:
 
   wp-cli:
     container_name: wp-cli
-    image: wordpress:cli-php8.1
+    image: wordpress:${WP_CLI_VERSION}
     user: www-data
     environment:
       WORDPRESS_DB_HOST: ${WORDPRESS_DB_HOST}
