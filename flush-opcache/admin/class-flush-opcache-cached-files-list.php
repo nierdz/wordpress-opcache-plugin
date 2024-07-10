@@ -129,7 +129,7 @@ class Flush_Opcache_Cached_Files_List extends WP_List_Table {
 		if ( ! empty( $_GET['s'] ) ) { // phpcs:ignore
 			$opcache_scripts_filtered = array_filter(
 				$opcache_scripts,
-				function ( $array ) {
+				function ( $array ) { // phpcs:ignore
 					return sanitize_key( $_GET['s'] ) !== '' && mb_strpos( $array['full_path'], sanitize_key( $_GET['s'] ) ) !== false; // phpcs:ignore
 				}
 			);
@@ -141,7 +141,7 @@ class Flush_Opcache_Cached_Files_List extends WP_List_Table {
 		if ( ! empty( $_GET['orderby'] ) ) { // phpcs:ignore
 			usort(
 				$opcache_scripts_filtered,
-				function( $a, $b ) {
+				function ( $a, $b ) {
 					$orderby = sanitize_key( $_GET['orderby'] ); // phpcs:ignore
 					if ( isset( $_GET['order'] ) && 'asc' === $_GET['order'] ) { // phpcs:ignore
 						return $a[ $orderby ] <=> $b[ $orderby ];
@@ -160,7 +160,6 @@ class Flush_Opcache_Cached_Files_List extends WP_List_Table {
 			'items'       => $opcache_scripts_items,
 			'total_items' => count( $opcache_scripts_filtered ),
 		);
-
 	}
 
 	/**
@@ -304,5 +303,4 @@ class Flush_Opcache_Cached_Files_List extends WP_List_Table {
 </p>
 		<?php
 	}
-
 }

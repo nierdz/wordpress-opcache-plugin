@@ -376,5 +376,4 @@ class Flush_Opcache_Admin {
 			$this->flush_opcache_reset();
 		}
 	}
-
 }

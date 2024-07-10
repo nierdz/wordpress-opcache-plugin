@@ -196,6 +196,5 @@ class Flush_Opcache_Statistics {
 			'blacklist'  => $config['blacklist'],
 			'functions'  => get_extension_funcs( 'Zend OPcache' ),
 		);
-
 	}
 }

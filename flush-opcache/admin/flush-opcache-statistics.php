@@ -13,7 +13,7 @@ if ( ! defined( 'WPINC' ) ) {
 	die;
 }
 
-require_once plugin_dir_path( dirname( __FILE__ ) ) . '/includes/class-flush-opcache-statistics.php';
+require_once plugin_dir_path( __DIR__ ) . '/includes/class-flush-opcache-statistics.php';
 $opcache_data                   = new Flush_Opcache_Statistics();
 $opcache_stroke_dasharray       = pi() * 200;
 $opcache_used_memory_percentage = $opcache_data->get_stats( 'overview', 'used_memory_percentage' );
@@ -224,7 +224,7 @@ $opcache_data_directives        = $opcache_data->get_stats( 'directives' );
 						<?php
 						$count = 0;
 						foreach ( $opcache_data->get_stats( 'functions' ) as $function ) {
-							$count++;
+							++$count;
 							?>
 							<tr<?php if ( 0 === $count % 2 ) { ?> class="alternate" <?php } // phpcs:ignore ?>>
 							<td><a href="https://www.php.net/<?php echo esc_attr( $function ); // phpcs:ignore ?>" target="_blank"><?php echo $function; ?></a></td>
@@ -252,7 +252,7 @@ $opcache_data_directives        = $opcache_data->get_stats( 'directives' );
 						<?php
 						$count = 0;
 						foreach ( $opcache_data_directives as $directive ) {
-							$count++;
+							++$count;
 							if ( is_array( $directive['v'] ) ) {
 								$directive_value = '<ul>';
 								foreach ( $directive['v'] as $item ) {
