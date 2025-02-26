@@ -1,4 +1,4 @@
-name: PUSH
+name: SVN
 
 on:
   push:
