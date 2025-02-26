@@ -1,9 +1,8 @@
-version: '3'
 services:
   wordpress:
     container_name: wordpress
     image: wordpress:${WP_VERSION}
-    restart: always
+    restart: on-failure
     environment:
       WORDPRESS_DB_HOST: ${WORDPRESS_DB_HOST}
       WORDPRESS_DB_USER: ${WORDPRESS_DB_USER}
@@ -23,8 +22,8 @@ services:
 
   db:
     container_name: db
-    image: mysql:8-debian
-    restart: always
+    image: mariadb:11
+    restart: on-failure
     environment:
       MYSQL_DATABASE: ${WORDPRESS_DB_NAME}
       MYSQL_USER: ${WORDPRESS_DB_USER}
@@ -32,8 +31,11 @@ services:
       MYSQL_ROOT_PASSWORD: ${WORDPRESS_DB_PASSWORD}
     volumes:
       - ./db:/var/lib/mysql:rw
+    command: >
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_unicode_ci
     healthcheck:
-      test: ["CMD-SHELL", "mysqladmin -u root -pnotsecurepassword ping || exit 1"]
+      test: ["CMD-SHELL", "mysqladmin -u root -p${WORDPRESS_DB_PASSWORD} ping || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 3
