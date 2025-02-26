@@ -10,22 +10,12 @@ jobs:
   release:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-      - name: Build Changelog
-        id: git-chglog
-        shell: bash
-        run: |
-          curl -o git-chglog_0.15.4_linux_amd64.tar.gz -L https://github.com/git-chglog/git-chglog/releases/download/v0.15.4/git-chglog_0.15.4_linux_amd64.tar.gz
-          tar xvzf git-chglog_0.15.4_linux_amd64.tar.gz git-chglog
-          chmod +x ./git-chglog
-          ./git-chglog "${GITHUB_REF##*/}" > changelog.md
-      - name: Create Release
-        uses: actions/create-release@v1
-        with:
-          tag_name: ${{ github.ref }}
-          release_name: ${{ github.ref }}
-          body_path: changelog.md
+      - name: Create release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          tag: ${{ github.ref_name }}
+        run: |
+          gh release create "$tag" \
+              --repo="$GITHUB_REPOSITORY" \
+              --title="${tag#v}" \
+              --generate-notes
