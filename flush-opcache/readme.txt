@@ -4,7 +4,7 @@ Tags: opcache, cache, flush, php, multisite
 Requires at least: 6.0
 Requires PHP: 8.1
 Tested up to: 6.7.2
-Stable tag: 4.2.1
+Stable tag: 4.2.2
 License: GPLv2
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -15,7 +15,6 @@ Manage OPcache inside your WordPress admin dashboard.
 **Flush OPcache**
 
 * creates a button in admin bar to flush OPcache
-* menu is under Tools
 * flush only files in WordPress absolute path
 * individual or bulk file invalidation
 * support both memory and file caching
@@ -33,7 +32,7 @@ Manage OPcache inside your WordPress admin dashboard.
 * add flush-opcache command to flush cache with cli: `wp flush-opcache flush`
 * don't forget to add `opcache.enable_cli=1` to your PHP configuration
 
-There are three tabs in admin page:
+**There are three tabs in admin page under Tools:**
 
 * General settings: plugin settings
 * Statistics: responsive dashboard about OPcache statistics
