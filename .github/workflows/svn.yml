@@ -10,6 +10,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
+    - name: install svn
+      run: sudo apt install -y subversion
     - name: push to svn
       run: bash github-to-svn.sh
       env:
