@@ -9,7 +9,7 @@ jobs:
   github-to-svn:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: push to svn
       run: bash github-to-svn.sh
       env:
