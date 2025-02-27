@@ -88,11 +88,13 @@ class Flush_Opcache_Admin {
 			echo '<div class="notice notice-error">
               <p>' . esc_html__( 'You do not have the Zend OPcache extension loaded, you need to install it to use this plugin.', 'flush-opcache' ) . '</p>
             </div>';
+			return false;
 		}
 		if ( ! opcache_get_status() ) {
 			echo '<div class="notice notice-error">
               <p>' . esc_html__( 'Zend OPcache is loaded but not activated. You need to set opcache.enable=1 in your php.ini', 'flush-opcache' ) . '</p>
             </div>';
+			return false;
 		}
 		$current_tab = $this->manage_tabs();
 		switch ( $current_tab ) {
@@ -252,16 +254,13 @@ class Flush_Opcache_Admin {
 		if ( ! is_user_logged_in() || ! is_admin_bar_showing() ) {
 			return false;
 		}
-		if ( ! is_admin() ) {
-			return false;
-		}
 		if ( get_site_option( 'flush-opcache-hide-button' ) === '1' ) {
 			return false;
 		}
-		$base_url   = remove_query_arg( 'settings-updated' );
-		$flush_url  = add_query_arg( array( 'flush_opcache_action' => 'flushopcacheall' ), $base_url );
-		$nonced_url = wp_nonce_url( $flush_url, 'flush_opcache_all' );
-		if ( ( is_multisite() && is_super_admin() && is_main_site() ) || ( ! is_multisite() && is_admin() ) ) {
+		if ( current_user_can( 'activate_plugins' ) ) {
+			$base_url   = remove_query_arg( 'settings-updated' );
+			$flush_url  = add_query_arg( array( 'flush_opcache_action' => 'flushopcacheall' ), $base_url );
+			$nonced_url = wp_nonce_url( $flush_url, 'flush_opcache_all' );
 			$wp_admin_bar->add_menu(
 				array(
 					'parent' => '',
@@ -271,6 +270,8 @@ class Flush_Opcache_Admin {
 					'href'   => $nonced_url,
 				)
 			);
+		} else {
+			return false;
 		}
 	}
 

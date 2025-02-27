@@ -12,8 +12,8 @@ services:
     ports:
       - 80:80
     volumes:
-      - wp_data:/var/www/html
-      - ./flush-opcache:/var/www/html/wp-content/plugins/flush-opcache
+      - wp_data:/var/www/html:rw
+      - ./flush-opcache:/var/www/html/wp-content/plugins/flush-opcache:ro
     healthcheck:
       test: ["CMD", "/bin/bash", "-c", "curl -s -o /dev/null http://localhost"]
       interval: 10s
@@ -43,7 +43,7 @@ services:
   wp-cli:
     container_name: wp-cli
     image: wordpress:${WP_CLI_VERSION}
-    user: www-data
+    user: 33:33
     environment:
       WORDPRESS_DB_HOST: ${WORDPRESS_DB_HOST}
       WORDPRESS_DB_USER: ${WORDPRESS_DB_USER}
@@ -51,8 +51,8 @@ services:
       WORDPRESS_DB_NAME: ${WORDPRESS_DB_NAME}
       WORDPRESS_DEBUG: ${WORDPRESS_DEBUG}
     volumes:
-      - wp_data:/var/www/html
-      - ./flush-opcache:/var/www/html/wp-content/plugins/flush-opcache
+      - wp_data:/var/www/html:rw
+      - ./flush-opcache:/var/www/html/wp-content/plugins/flush-opcache:ro
     command:
       - /bin/bash
       - -c
@@ -63,8 +63,11 @@ services:
           --title=dev \
           --admin_user=admin \
           --admin_password=notsecurepassword \
-          --admin_email=nierdz@example.com;
+          --admin_email=nierdz@example.com
         wp plugin activate flush-opcache
+        rm -rf /var/www/html/wp-content/themes/{twentytwentythree,twentytwentyfour}/
+        rm -rf /var/www/html/wp-content/plugins/{akismet,hello.php}/
+        wp theme update --all
 
 volumes:
   wp_data:
