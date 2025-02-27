@@ -88,11 +88,13 @@ class Flush_Opcache_Admin {
 			echo '<div class="notice notice-error">
               <p>' . esc_html__( 'You do not have the Zend OPcache extension loaded, you need to install it to use this plugin.', 'flush-opcache' ) . '</p>
             </div>';
+			return false;
 		}
 		if ( ! opcache_get_status() ) {
 			echo '<div class="notice notice-error">
               <p>' . esc_html__( 'Zend OPcache is loaded but not activated. You need to set opcache.enable=1 in your php.ini', 'flush-opcache' ) . '</p>
             </div>';
+			return false;
 		}
 		$current_tab = $this->manage_tabs();
 		switch ( $current_tab ) {
