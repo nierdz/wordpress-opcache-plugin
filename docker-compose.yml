@@ -3,6 +3,9 @@ services:
     container_name: wordpress
     image: wordpress:${WP_VERSION}
     restart: on-failure
+    depends_on:
+      db:
+        condition: service_healthy
     environment:
       WORDPRESS_DB_HOST: ${WORDPRESS_DB_HOST}
       WORDPRESS_DB_USER: ${WORDPRESS_DB_USER}
@@ -20,6 +23,32 @@ services:
       timeout: 5s
       retries: 3
 
+  wordpress-multisite:
+    container_name: wordpress-multisite
+    image: wordpress:${WP_VERSION}
+    restart: on-failure
+    depends_on:
+      db-multisite:
+        condition: service_healthy
+    environment:
+      WORDPRESS_DB_HOST: db-multisite
+      WORDPRESS_DB_USER: ${WORDPRESS_DB_USER}
+      WORDPRESS_DB_PASSWORD: ${WORDPRESS_DB_PASSWORD}
+      WORDPRESS_DB_NAME: ${WORDPRESS_DB_NAME}_multisite
+      WORDPRESS_DEBUG: ${WORDPRESS_DEBUG}
+      WORDPRESS_CONFIG_EXTRA: |
+        define( 'WP_ALLOW_MULTISITE', true );
+    ports:
+      - 8080:80
+    volumes:
+      - wp_multisite_data:/var/www/html:rw
+      - ./flush-opcache:/var/www/html/wp-content/plugins/flush-opcache:ro
+    healthcheck:
+      test: ["CMD", "/bin/bash", "-c", "curl -s -o /dev/null http://localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+
   db:
     container_name: db
     image: mariadb:11
@@ -30,15 +59,36 @@ services:
       MYSQL_PASSWORD: ${WORDPRESS_DB_PASSWORD}
       MYSQL_ROOT_PASSWORD: ${WORDPRESS_DB_PASSWORD}
     volumes:
-      - ./db:/var/lib/mysql:rw
+      - db_data:/var/lib/mysql:rw
     command: >
       --character-set-server=utf8mb4
       --collation-server=utf8mb4_unicode_ci
     healthcheck:
-      test: ["CMD-SHELL", "mysqladmin -u root -p${WORDPRESS_DB_PASSWORD} ping || exit 1"]
+      test: ["CMD-SHELL", "mariadb-admin ping -h localhost -u root -p$${MYSQL_ROOT_PASSWORD} --silent || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 3
+
+
+  db-multisite:
+    container_name: db-multisite
+    image: mariadb:11
+    restart: on-failure
+    environment:
+      MYSQL_DATABASE: ${WORDPRESS_DB_NAME}_multisite
+      MYSQL_USER: ${WORDPRESS_DB_USER}
+      MYSQL_PASSWORD: ${WORDPRESS_DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${WORDPRESS_DB_PASSWORD}
+    volumes:
+      - db_multisite_data:/var/lib/mysql:rw
+    command: >
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_unicode_ci
+    healthcheck:
+      test: ["CMD-SHELL", "mariadb-admin ping -h localhost -u root -p$${MYSQL_ROOT_PASSWORD} --silent || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
 
   wp-cli:
     container_name: wp-cli
@@ -60,7 +110,7 @@ services:
         while !</dev/tcp/db/3306; do sleep 1; done
         wp core install \
           --url=http://localhost \
-          --title=dev \
+          --title="WP OPcache dev" \
           --admin_user=admin \
           --admin_password=notsecurepassword \
           --admin_email=nierdz@example.com
@@ -69,5 +119,56 @@ services:
         rm -rf /var/www/html/wp-content/plugins/{akismet,hello.php}/
         wp theme update --all
 
+  wp-cli-multisite:
+    container_name: wp-cli-multisite
+    image: wordpress:${WP_CLI_VERSION}
+    user: 33:33
+    depends_on:
+      wordpress-multisite:
+        condition: service_healthy
+      db-multisite:
+        condition: service_healthy
+    environment:
+      WORDPRESS_DB_HOST: db-multisite
+      WORDPRESS_DB_USER: ${WORDPRESS_DB_USER}
+      WORDPRESS_DB_PASSWORD: ${WORDPRESS_DB_PASSWORD}
+      WORDPRESS_DB_NAME: ${WORDPRESS_DB_NAME}_multisite
+      WORDPRESS_DEBUG: ${WORDPRESS_DEBUG}
+    volumes:
+      - wp_multisite_data:/var/www/html:rw
+      - ./flush-opcache:/var/www/html/wp-content/plugins/flush-opcache:ro
+    command:
+      - /bin/bash
+      - -c
+      - |
+        if ! wp core is-installed --network; then
+          wp core multisite-install \
+            --url=http://localhost:${WP_MULTISITE_PORT:-8080} \
+            --title="WP OPcache multisite dev" \
+            --admin_user=admin \
+            --admin_password=notsecurepassword \
+            --admin_email=nierdz@example.com \
+            --skip-email
+        fi
+        cat > /var/www/html/.htaccess <<'HTACCESS'
+        # BEGIN WordPress Multisite
+        RewriteEngine On
+        RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+        RewriteBase /
+        RewriteRule ^index\.php$$ - [L]
+        RewriteRule ^([_0-9a-zA-Z-]+/)?wp-admin$$ $$1wp-admin/ [R=301,L]
+        RewriteCond %{REQUEST_FILENAME} -f [OR]
+        RewriteCond %{REQUEST_FILENAME} -d
+        RewriteRule ^ - [L]
+        RewriteRule ^([_0-9a-zA-Z-]+/)?(wp-(content|admin|includes).*) $$2 [L]
+        RewriteRule ^([_0-9a-zA-Z-]+/)?(.*\.php)$$ $$2 [L]
+        RewriteRule . index.php [L]
+        # END WordPress Multisite
+        HTACCESS
+        wp plugin activate flush-opcache --network
+
 volumes:
   wp_data:
+  wp_multisite_data:
+  db_data:
+  db_multisite_data:
