@@ -96,6 +96,11 @@ services:
     container_name: wp-cli
     image: wordpress:${WP_CLI_VERSION}
     user: 33:33
+    depends_on:
+      wordpress:
+        condition: service_healthy
+      db:
+        condition: service_healthy
     environment:
       WORDPRESS_DB_HOST: ${WORDPRESS_DB_HOST}
       WORDPRESS_DB_USER: ${WORDPRESS_DB_USER}
