@@ -17,6 +17,7 @@ services:
     volumes:
       - wp_data:/var/www/html:rw
       - ./flush-opcache:/var/www/html/wp-content/plugins/flush-opcache:ro
+      - ./opcache-jit.ini:/usr/local/etc/php/conf.d/zz-opcache-jit.ini:ro
     healthcheck:
       test: ["CMD", "/bin/bash", "-c", "curl -s -o /dev/null http://localhost"]
       interval: 10s
@@ -43,6 +44,7 @@ services:
     volumes:
       - wp_multisite_data:/var/www/html:rw
       - ./flush-opcache:/var/www/html/wp-content/plugins/flush-opcache:ro
+      - ./opcache-jit.ini:/usr/local/etc/php/conf.d/zz-opcache-jit.ini:ro
     healthcheck:
       test: ["CMD", "/bin/bash", "-c", "curl -s -o /dev/null http://localhost"]
       interval: 10s

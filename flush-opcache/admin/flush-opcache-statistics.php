@@ -26,6 +26,7 @@ $opcache_used_keys_percentage   = round( ( $opcache_num_cached_keys / $opcache_m
 $opcache_used_keys_stroke       = $opcache_stroke_dasharray * ( 1 - $opcache_used_keys_percentage / 100 );
 $opcache_data_readable          = $opcache_data->get_stats( 'overview', 'readable' );
 $opcache_data_directives        = $opcache_data->get_stats( 'directives' );
+$opcache_data_jit               = $opcache_data->get_stats( 'jit' );
 
 ?>
 
@@ -146,6 +147,27 @@ $opcache_data_directives        = $opcache_data->get_stats( 'directives' );
 						</tbody>
 					</table>
 					</div>
+
+
+					<?php if ( is_array( $opcache_data_jit ) ) { ?>
+					<div class="postbox flush-opcache-postbox">
+					<table class="widefat">
+						<thead>
+							<tr>
+								<th class="flush-opcache-widget-title"><b><?php esc_attr_e( 'JIT usage', 'flush-opcache' ); ?></b></th>
+								<th class="flush-opcache-widget-title"></th>
+							</tr>
+						</thead>
+						<tbody>
+						<tr><td><b><?php esc_attr_e( 'enabled', 'flush-opcache' ); ?>:</b></td><td><?php echo ! empty( $opcache_data_jit['enabled'] ) ? esc_html__( 'yes', 'flush-opcache' ) : esc_html__( 'no', 'flush-opcache' ); ?></td></tr>
+						<tr class="alternate"><td><b><?php esc_attr_e( 'active', 'flush-opcache' ); ?>:</b></td><td><?php echo ! empty( $opcache_data_jit['on'] ) ? esc_html__( 'yes', 'flush-opcache' ) : esc_html__( 'no', 'flush-opcache' ); ?></td></tr>
+						<tr><td><b><?php esc_attr_e( 'buffer size', 'flush-opcache' ); ?>:</b></td><td><?php echo esc_html( $opcache_data_jit['readable']['buffer_size'] ); ?></td></tr>
+						<tr class="alternate"><td><b><?php esc_attr_e( 'used memory', 'flush-opcache' ); ?>:</b></td><td><?php echo esc_html( $opcache_data_jit['readable']['buffer_used'] ); ?> (<?php echo esc_html( $opcache_data_jit['buffer_used_percentage'] ); ?>%)</td></tr>
+						<tr><td><b><?php esc_attr_e( 'free memory', 'flush-opcache' ); ?>:</b></td><td><?php echo esc_html( $opcache_data_jit['readable']['buffer_free'] ); ?></td></tr>
+						</tbody>
+					</table>
+					</div>
+					<?php } ?>
 
 					<div class="postbox flush-opcache-postbox">
 					<table class="widefat">

@@ -118,8 +118,8 @@ class Flush_Opcache_Cached_Files_List extends WP_List_Table {
 						$item['full_path']           = './' . ltrim( substr( $full_path, strlen( $root_path ) ), '/' );
 						$item['hits']                = $script['hits'];
 						$item['memory_consumption']  = $script['memory_consumption'];
-						$item['timestamp']           = $script['timestamp'];
-						$item['last_used_timestamp'] = $script['last_used_timestamp'];
+						$item['timestamp']           = isset( $script['timestamp'] ) ? $script['timestamp'] : null;
+						$item['last_used_timestamp'] = isset( $script['last_used_timestamp'] ) ? $script['last_used_timestamp'] : null;
 						array_push( $opcache_scripts, $item );
 					}
 				}
@@ -195,6 +195,9 @@ class Flush_Opcache_Cached_Files_List extends WP_List_Table {
 				break; // phpcs:ignore
 			case 'timestamp':
 			case 'last_used_timestamp':
+				if ( empty( $item[ $column_name ] ) ) {
+					return '&mdash;';
+				}
 				$offset = get_option( 'gmt_offset' ) * HOUR_IN_SECONDS;
 				return date_i18n( 'Y/m/d g:i:s A', $item[ $column_name ] + $offset );
 				break; // phpcs:ignore

@@ -151,6 +151,26 @@ class Flush_Opcache_Statistics {
 			);
 		}
 
+		$jit = false;
+		if ( ! empty( $status['jit'] ) && is_array( $status['jit'] ) ) {
+			$jit_buffer_size = isset( $status['jit']['buffer_size'] ) ? (int) $status['jit']['buffer_size'] : 0;
+			$jit_buffer_free = isset( $status['jit']['buffer_free'] ) ? (int) $status['jit']['buffer_free'] : 0;
+			$jit_buffer_used = max( 0, $jit_buffer_size - $jit_buffer_free );
+
+			$jit = array_merge(
+				$status['jit'],
+				array(
+					'buffer_used'            => $jit_buffer_used,
+					'buffer_used_percentage' => $jit_buffer_size > 0 ? round( 100 * $jit_buffer_used / $jit_buffer_size, 2 ) : 0,
+					'readable'               => array(
+						'buffer_size' => size_format( $jit_buffer_size ),
+						'buffer_used' => size_format( $jit_buffer_used ),
+						'buffer_free' => size_format( $jit_buffer_free ),
+					),
+				)
+			);
+		}
+
 		$directives = array();
 		ksort( $config['directives'] );
 		foreach ( $config['directives'] as $k => $v ) {
@@ -192,6 +212,7 @@ class Flush_Opcache_Statistics {
 			'version'    => $version,
 			'overview'   => $overview,
 			'preload'    => $preload,
+			'jit'        => $jit,
 			'directives' => $directives,
 			'blacklist'  => $config['blacklist'],
 			'functions'  => get_extension_funcs( 'Zend OPcache' ),
