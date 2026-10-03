@@ -22,7 +22,7 @@ if ( ! defined( 'WPINC' ) ) {
 	die;
 }
 
-define( 'FLUSH_OPCACHE_VERSION', '4.2.3' );
+define( 'FLUSH_OPCACHE_VERSION', '4.3.0' );
 define( 'FLUSH_OPCACHE_NAME', 'flush-opcache' );
 
 require plugin_dir_path( __FILE__ ) . 'includes/class-flush-opcache.php';

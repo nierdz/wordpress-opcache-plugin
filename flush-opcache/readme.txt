@@ -3,8 +3,8 @@ Contributors: mnttech, ChristianGiupponi
 Tags: opcache, cache, flush, php, multisite
 Requires at least: 6.0
 Requires PHP: 8.1
-Tested up to: 6.7.2
-Stable tag: 4.2.3
+Tested up to: 7.1.2
+Stable tag: 4.3.0
 License: GPLv2
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -52,6 +52,14 @@ As usual...
 6. CLI command
 
 == Changelog ==
+
+= 4.3.0 =
+* Fix i18n bugs
+* Fix bug in multisite mode
+* Support Windows/IIS files listing
+* Fix bug in cached files list where timestamp is not set
+* Add OPcache JIT statistics to dashboard
+* Better detection of OPcache
 
 = 4.2.3 =
 * Ensure user is admin or superadmin to display flush button in admin bar
