@@ -55,7 +55,7 @@ class Flush_Opcache {
 	 */
 	private function create_admin() {
 		$admin = new Flush_Opcache_Admin( $this->get_name(), $this->get_version() );
-		if ( is_multisite() && is_main_site() ) {
+		if ( is_multisite() ) {
 			add_action( 'network_admin_menu', array( $admin, 'flush_opcache_admin_menu' ) );
 			add_action( 'network_admin_edit_flush_opcache_update', array( $admin, 'flush_opcache_update_network_options' ) );
 		} else {

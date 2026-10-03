@@ -58,13 +58,14 @@ class Flush_Opcache_Admin {
 	 * Generate menu pages in admin area
 	 */
 	public function flush_opcache_admin_menu() {
-		if ( is_multisite() && is_super_admin() && is_main_site() ) {
-			add_management_page(
+		if ( is_multisite() && is_network_admin() ) {
+			add_menu_page(
 				__( 'WP OPcache Settings', 'flush-opcache' ),
 				__( 'WP OPcache', 'flush-opcache' ),
 				'manage_network_options',
 				'flush-opcache',
-				array( $this, 'flush_opcache_admin_page' )
+				array( $this, 'flush_opcache_admin_page' ),
+				'dashicons-admin-tools'
 			);
 		} elseif ( ! is_multisite() && is_admin() ) {
 			add_management_page(
