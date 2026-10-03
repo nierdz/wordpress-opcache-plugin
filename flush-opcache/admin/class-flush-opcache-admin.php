@@ -85,16 +85,34 @@ class Flush_Opcache_Admin {
 		if ( ! is_admin() ) {
 			wp_die( esc_html__( 'Sorry, you are not allowed to access this page.', 'flush-opcache' ) );
 		}
-		if ( ! extension_loaded( 'Zend OPcache' ) ) {
+		if ( ! function_exists( 'opcache_get_configuration' ) ) {
 			echo '<div class="notice notice-error">
               <p>' . esc_html__( 'You do not have the Zend OPcache extension loaded, you need to install it to use this plugin.', 'flush-opcache' ) . '</p>
             </div>';
 			return false;
 		}
-		if ( ! opcache_get_status() ) {
+
+		$configuration = opcache_get_configuration();
+		$directives    = is_array( $configuration ) && isset( $configuration['directives'] ) ? $configuration['directives'] : array();
+		$status        = function_exists( 'opcache_get_status' ) ? @opcache_get_status( false ) : false; // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
+
+		if ( empty( $directives['opcache.enable'] ) ) {
 			echo '<div class="notice notice-error">
               <p>' . esc_html__( 'Zend OPcache is loaded but not activated. You need to set opcache.enable=1 in your php.ini', 'flush-opcache' ) . '</p>
             </div>';
+			return false;
+		}
+
+		if ( ! is_array( $status ) ) {
+			if ( ! empty( $directives['opcache.file_cache_only'] ) ) {
+				echo '<div class="notice notice-warning">
+              <p>' . esc_html__( 'Zend OPcache is active in file-cache-only mode. PHP does not expose file-cache entries through its status API, so WP OPcache cannot display statistics, list cached files, or flush this cache. Use your hosting control panel to purge it.', 'flush-opcache' ) . '</p>
+            </div>';
+			} else {
+				echo '<div class="notice notice-warning">
+              <p>' . esc_html__( 'Zend OPcache is enabled, but its status is not available to WordPress. Ask your hosting provider whether opcache.restrict_api or disabled PHP functions prevent access to opcache_get_status().', 'flush-opcache' ) . '</p>
+            </div>';
+			}
 			return false;
 		}
 		$current_tab = $this->manage_tabs();
