@@ -14,6 +14,7 @@
  * License:           GPL-2.0+
  * License URI:       http://www.gnu.org/licenses/gpl-2.0.txt
  * Text Domain:       flush-opcache
+ * Domain Path:       /languages
  */
 
 // If this file is called directly, abort.
@@ -21,7 +22,7 @@ if ( ! defined( 'WPINC' ) ) {
 	die;
 }
 
-define( 'FLUSH_OPCACHE_VERSION', '4.2.3' );
+define( 'FLUSH_OPCACHE_VERSION', '4.3.0' );
 define( 'FLUSH_OPCACHE_NAME', 'flush-opcache' );
 
 require plugin_dir_path( __FILE__ ) . 'includes/class-flush-opcache.php';

@@ -42,5 +42,8 @@ tests: ## Run all phpcs tests
 
 remove-docker-data: ## Remove all data related to docker compose
 	docker compose down
-	docker volume rm wordpress-opcache-plugin_wp_data
-	sudo rm -rf ./db
+	docker volume rm \
+		wordpress-opcache-plugin_wp_data \
+		wordpress-opcache-plugin_db_data \
+		wordpress-opcache-plugin_wp_multisite_data \
+		wordpress-opcache-plugin_db_multisite_data

@@ -58,13 +58,14 @@ class Flush_Opcache_Admin {
 	 * Generate menu pages in admin area
 	 */
 	public function flush_opcache_admin_menu() {
-		if ( is_multisite() && is_super_admin() && is_main_site() ) {
-			add_management_page(
+		if ( is_multisite() && is_network_admin() ) {
+			add_menu_page(
 				__( 'WP OPcache Settings', 'flush-opcache' ),
 				__( 'WP OPcache', 'flush-opcache' ),
 				'manage_network_options',
 				'flush-opcache',
-				array( $this, 'flush_opcache_admin_page' )
+				array( $this, 'flush_opcache_admin_page' ),
+				'dashicons-admin-tools'
 			);
 		} elseif ( ! is_multisite() && is_admin() ) {
 			add_management_page(
@@ -82,18 +83,36 @@ class Flush_Opcache_Admin {
 	 */
 	public function flush_opcache_admin_page() {
 		if ( ! is_admin() ) {
-			wp_die( esc_html__( 'Sorry, you are not allowed to access this page.', 'wporg' ) );
+			wp_die( esc_html__( 'Sorry, you are not allowed to access this page.', 'flush-opcache' ) );
 		}
-		if ( ! extension_loaded( 'Zend OPcache' ) ) {
+		if ( ! function_exists( 'opcache_get_configuration' ) ) {
 			echo '<div class="notice notice-error">
               <p>' . esc_html__( 'You do not have the Zend OPcache extension loaded, you need to install it to use this plugin.', 'flush-opcache' ) . '</p>
             </div>';
 			return false;
 		}
-		if ( ! opcache_get_status() ) {
+
+		$configuration = opcache_get_configuration();
+		$directives    = is_array( $configuration ) && isset( $configuration['directives'] ) ? $configuration['directives'] : array();
+		$status        = function_exists( 'opcache_get_status' ) ? @opcache_get_status( false ) : false; // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
+
+		if ( empty( $directives['opcache.enable'] ) ) {
 			echo '<div class="notice notice-error">
               <p>' . esc_html__( 'Zend OPcache is loaded but not activated. You need to set opcache.enable=1 in your php.ini', 'flush-opcache' ) . '</p>
             </div>';
+			return false;
+		}
+
+		if ( ! is_array( $status ) ) {
+			if ( ! empty( $directives['opcache.file_cache_only'] ) ) {
+				echo '<div class="notice notice-warning">
+              <p>' . esc_html__( 'Zend OPcache is active in file-cache-only mode. PHP does not expose file-cache entries through its status API, so WP OPcache cannot display statistics, list cached files, or flush this cache. Use your hosting control panel to purge it.', 'flush-opcache' ) . '</p>
+            </div>';
+			} else {
+				echo '<div class="notice notice-warning">
+              <p>' . esc_html__( 'Zend OPcache is enabled, but its status is not available to WordPress. Ask your hosting provider whether opcache.restrict_api or disabled PHP functions prevent access to opcache_get_status().', 'flush-opcache' ) . '</p>
+            </div>';
+			}
 			return false;
 		}
 		$current_tab = $this->manage_tabs();
@@ -118,7 +137,7 @@ class Flush_Opcache_Admin {
 	<div class="wrap">
 		<?php if ( isset( $_GET['page'] ) && isset( $_GET['settings-updated'] ) && 'flush-opcache' === $_GET['page'] && 'true' === $_GET['settings-updated'] ) { // phpcs:ignore WordPress.Security.NonceVerification ?>
 		<div id="message" class="updated notice is-dismissible">
-			<p><?php esc_html_e( 'Settings saved.', 'wporg' ); ?></p>
+			<p><?php esc_html_e( 'Settings saved.', 'flush-opcache' ); ?></p>
 		</div>
 			<?php
 		}
@@ -313,13 +332,18 @@ class Flush_Opcache_Admin {
 		if ( function_exists( 'opcache_get_status' ) ) {
 			try {
 				$raw = opcache_get_status( true );
-				if ( array_key_exists( 'scripts', $raw ) ) {
+				if ( is_array( $raw ) && ! empty( $raw['scripts'] ) ) {
+					$home_path = wp_normalize_path( get_home_path() );
+					$abspath   = wp_normalize_path( ABSPATH );
+
 					foreach ( $raw['scripts'] as $script ) {
-						/* Remove files outside of WP */
-						if ( false === strpos( $script['full_path'], get_home_path() ) && false === strpos( $script['full_path'], ABSPATH ) ) {
+						$full_path = wp_normalize_path( $script['full_path'] );
+
+						/* Remove files outside of WordPress. */
+						if ( 0 !== stripos( $full_path, $home_path ) && 0 !== stripos( $full_path, $abspath ) ) {
 							continue;
 						}
-						array_push( $opcache_scripts, $script['full_path'] );
+						array_push( $opcache_scripts, $full_path );
 					}
 				}
 			} catch ( \Throwable $e ) {
