@@ -99,18 +99,23 @@ class Flush_Opcache_Cached_Files_List extends WP_List_Table {
 		if ( function_exists( 'opcache_get_status' ) ) {
 			try {
 				$raw = opcache_get_status( true );
-				if ( array_key_exists( 'scripts', $raw ) ) {
+				if ( is_array( $raw ) && ! empty( $raw['scripts'] ) ) {
+					$home_path = wp_normalize_path( get_home_path() );
+					$abspath   = wp_normalize_path( ABSPATH );
+
 					foreach ( $raw['scripts'] as $script ) {
-						/* Remove files outside of WP */
-						if ( false !== strpos( $script['full_path'], get_home_path() ) ) {
-							$home_path = get_home_path();
-						} elseif ( false !== strpos( $script['full_path'], ABSPATH ) ) {
-							$home_path = ABSPATH;
+						$full_path = wp_normalize_path( $script['full_path'] );
+
+						/* Remove files outside of WordPress. */
+						if ( 0 === stripos( $full_path, $home_path ) ) {
+							$root_path = $home_path;
+						} elseif ( 0 === stripos( $full_path, $abspath ) ) {
+							$root_path = $abspath;
 						} else {
 							continue;
 						}
 						$item                        = array();
-						$item['full_path']           = str_replace( $home_path, './', $script['full_path'] );
+						$item['full_path']           = './' . ltrim( substr( $full_path, strlen( $root_path ) ), '/' );
 						$item['hits']                = $script['hits'];
 						$item['memory_consumption']  = $script['memory_consumption'];
 						$item['timestamp']           = $script['timestamp'];
@@ -228,7 +233,8 @@ class Flush_Opcache_Cached_Files_List extends WP_List_Table {
 				( $this->current_action() === 'delete' && wp_verify_nonce( $_REQUEST['_wpnonce'] ) ) // phpcs:ignore
 		) {
 			foreach ( $array_file as $file ) {
-				wp_opcache_invalidate( get_home_path() . $file, true );
+				$relative_path = preg_replace( '#^\./#', '', wp_unslash( $file ) );
+				wp_opcache_invalidate( wp_normalize_path( get_home_path() ) . $relative_path, true );
 			}
 		}
 	}

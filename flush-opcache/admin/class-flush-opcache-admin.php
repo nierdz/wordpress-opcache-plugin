@@ -314,13 +314,18 @@ class Flush_Opcache_Admin {
 		if ( function_exists( 'opcache_get_status' ) ) {
 			try {
 				$raw = opcache_get_status( true );
-				if ( array_key_exists( 'scripts', $raw ) ) {
+				if ( is_array( $raw ) && ! empty( $raw['scripts'] ) ) {
+					$home_path = wp_normalize_path( get_home_path() );
+					$abspath   = wp_normalize_path( ABSPATH );
+
 					foreach ( $raw['scripts'] as $script ) {
-						/* Remove files outside of WP */
-						if ( false === strpos( $script['full_path'], get_home_path() ) && false === strpos( $script['full_path'], ABSPATH ) ) {
+						$full_path = wp_normalize_path( $script['full_path'] );
+
+						/* Remove files outside of WordPress. */
+						if ( 0 !== stripos( $full_path, $home_path ) && 0 !== stripos( $full_path, $abspath ) ) {
 							continue;
 						}
-						array_push( $opcache_scripts, $script['full_path'] );
+						array_push( $opcache_scripts, $full_path );
 					}
 				}
 			} catch ( \Throwable $e ) {
