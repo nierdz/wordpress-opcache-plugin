@@ -82,7 +82,7 @@ class Flush_Opcache_Admin {
 	 */
 	public function flush_opcache_admin_page() {
 		if ( ! is_admin() ) {
-			wp_die( esc_html__( 'Sorry, you are not allowed to access this page.', 'wporg' ) );
+			wp_die( esc_html__( 'Sorry, you are not allowed to access this page.', 'flush-opcache' ) );
 		}
 		if ( ! extension_loaded( 'Zend OPcache' ) ) {
 			echo '<div class="notice notice-error">
@@ -118,7 +118,7 @@ class Flush_Opcache_Admin {
 	<div class="wrap">
 		<?php if ( isset( $_GET['page'] ) && isset( $_GET['settings-updated'] ) && 'flush-opcache' === $_GET['page'] && 'true' === $_GET['settings-updated'] ) { // phpcs:ignore WordPress.Security.NonceVerification ?>
 		<div id="message" class="updated notice is-dismissible">
-			<p><?php esc_html_e( 'Settings saved.', 'wporg' ); ?></p>
+			<p><?php esc_html_e( 'Settings saved.', 'flush-opcache' ); ?></p>
 		</div>
 			<?php
 		}
