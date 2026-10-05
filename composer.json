@@ -1,7 +1,7 @@
 {
     "require-dev": {
         "automattic/vipwpcs": "3.1.0",
-        "dealerdirect/phpcodesniffer-composer-installer": "1.2.0"
+        "dealerdirect/phpcodesniffer-composer-installer": "1.2.1"
     },
     "config": {
         "allow-plugins": {
